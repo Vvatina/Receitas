@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_form_card"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:background="@drawable/bg_recipe_detail"
+        android:elevation="4dp">
+
+        <!-- Nome da receita -->
+        <TextView
+            android:id="@+id/tvRecipeName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bolo de Cenoura"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#4B0082"
+            android:gravity="center"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Seção Ingredientes -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ingredientes"
+            android:textColor="#6A1B9A"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvRecipeIngredients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="3 ovos\n2 xícaras de farinha de trigo\n1 xícara de açúcar"
+            android:textSize="16sp"
+            android:textColor="#444444"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Seção Instruções -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Modo de Preparo"
+            android:textColor="#6A1B9A"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvRecipeInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1. Bata todos os ingredientes no liquidificador.\n2. Despeje em uma forma untada.\n3. Asse por 40 minutos a 180ºC."
+            android:textSize="16sp"
+            android:textColor="#444444"
+            android:lineSpacingExtra="4dp" />
+
+    </LinearLayout>
+</ScrollView>

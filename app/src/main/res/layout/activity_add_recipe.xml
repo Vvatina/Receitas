@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_form_card"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_form_card"
+        android:padding="24dp"
+        android:elevation="4dp">
+
+        <!-- Título -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Adicionar Receita"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#4B0082"
+            android:gravity="center"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Nome da receita -->
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nome da Receita"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Ingredientes -->
+        <EditText
+            android:id="@+id/etIngredients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ingredientes:\n 1 Colher de sopa de manteiga, \n 1 Xícara de Farinha de trigo, ..."
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
+            android:minLines="4"
+            android:gravity="top"
+            android:textColor="#000000"
+            android:textColorHint="#888888"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Instruções -->
+
+        <!-- Botão Salvar -->
+        <EditText
+            android:id="@+id/etInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_edittext"
+            android:gravity="top"
+            android:hint="Instruções: \n 1. Junte a farinha e a manteiga num bowl\n 2. Misture até ficar homogéneo ..."
+            android:minLines="5"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#888888" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvar Receita"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button_purple"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Botão Cancelar -->
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button_gray" />
+
+    </LinearLayout>
+</ScrollView>

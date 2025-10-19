@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F5FF">
+
+    <!-- Fundo gradiente suave -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/bg_main_gradient">
+
+        <!-- Título -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Minhas Receitas"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#4B0082"
+            android:gravity="center"
+            android:paddingTop="24dp"
+            android:paddingBottom="12dp"
+            android:elevation="4dp" />
+
+        <!-- Lista de receitas -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewRecipes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:paddingBottom="100dp" />
+    </LinearLayout>
+
+    <!-- Mensagem quando não há receitas -->
+    <TextView
+        android:id="@+id/tvEmptyList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nenhuma receita ainda 😋\nToque no botão + para adicionar"
+        android:textColor="#777777"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- Botão flutuante -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnAddRecipe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add_white_24dp"
+        android:contentDescription="Adicionar Receita"
+        app:backgroundTint="#9A4DFF"
+        app:tint="@android:color/white"
+        android:elevation="8dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp" />
+
+</FrameLayout>

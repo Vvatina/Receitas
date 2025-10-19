@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Receitas</string>
+
+    <string-array name="recipe_types">
+        <item>Doce</item>
+        <item>Salgado</item>
+    </string-array>
+</resources>
