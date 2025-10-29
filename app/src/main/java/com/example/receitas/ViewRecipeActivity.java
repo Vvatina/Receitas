@@ -10,7 +10,7 @@ import com.example.receitas.model.Recipe;
 
 public class ViewRecipeActivity extends AppCompatActivity {
 
-    private TextView tvName, tvIngredients, tvInstructions;
+    private TextView tvName, tvType, tvIngredients, tvInstructions;
     private DatabaseHelper dbHelper;
     private int recipeId;
 
@@ -21,21 +21,20 @@ public class ViewRecipeActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().hide();
 
-
         // Inicializa views
         tvName = findViewById(R.id.tvRecipeName);
+        tvType = findViewById(R.id.tvRecipeType);
         tvIngredients = findViewById(R.id.tvRecipeIngredients);
         tvInstructions = findViewById(R.id.tvRecipeInstructions);
 
-        // Inicializa DatabaseHelper
         dbHelper = new DatabaseHelper(this);
 
-        // Pega o ID da receita enviado via Intent
         recipeId = getIntent().getIntExtra("recipe_id", -1);
         if (recipeId != -1) {
             loadRecipe(recipeId);
         } else {
             tvName.setText("Receita não encontrada");
+            tvType.setText("");
         }
     }
 
@@ -44,10 +43,12 @@ public class ViewRecipeActivity extends AppCompatActivity {
         Recipe recipe = dbHelper.getRecipeById(id);
         if (recipe != null) {
             tvName.setText(recipe.getName());
+            tvType.setText("Tipo: " + recipe.getType());
             tvIngredients.setText("Ingredientes:\n" + recipe.getIngredients());
             tvInstructions.setText("Instruções:\n" + recipe.getInstructions());
         } else {
             tvName.setText("Receita não encontrada");
+            tvType.setText("");
             tvIngredients.setText("");
             tvInstructions.setText("");
         }

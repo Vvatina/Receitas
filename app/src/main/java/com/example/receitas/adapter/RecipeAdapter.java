@@ -45,6 +45,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
         // Preenche os dados
         holder.tvName.setText(recipe.getName());
+        holder.tvType.setText(recipe.getType()); // exibe o tipo da receita
 
         // Clique no botão "Visualizar"
         holder.btnView.setOnClickListener(v -> listener.onViewClick(recipe));
@@ -70,15 +71,16 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
     // ViewHolder
     static class RecipeViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
+        TextView tvType;
         TextView btnView, btnEdit, btnDelete;
 
         public RecipeViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
+            tvType = itemView.findViewById(R.id.tvType); // novo campo
             btnView = itemView.findViewById(R.id.btnView);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }
-

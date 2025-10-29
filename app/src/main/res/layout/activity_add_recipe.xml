@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,12 +35,25 @@
             android:textColorHint="#888888"
             android:layout_marginBottom="16dp" />
 
+        <!-- Tipo da receita -->
+        <Spinner
+            android:id="@+id/spinnerType"
+            android:layout_width="match_parent"
+            android:background="@drawable/bg_edittext"
+            android:textColor="#000000"
+            android:padding="12dp"
+            android:hint="Tipo"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:popupBackground="@drawable/spinner_dropdown_bg"
+        />
+
         <!-- Ingredientes -->
         <EditText
             android:id="@+id/etIngredients"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ingredientes:\n 1 Colher de sopa de manteiga, \n 1 Xícara de Farinha de trigo, ..."
+            android:hint="Ingredientes"
             android:background="@drawable/bg_edittext"
             android:padding="12dp"
             android:minLines="4"
@@ -51,8 +63,6 @@
             android:layout_marginBottom="16dp" />
 
         <!-- Instruções -->
-
-        <!-- Botão Salvar -->
         <EditText
             android:id="@+id/etInstructions"
             android:layout_width="match_parent"
@@ -60,12 +70,13 @@
             android:layout_marginBottom="24dp"
             android:background="@drawable/bg_edittext"
             android:gravity="top"
-            android:hint="Instruções: \n 1. Junte a farinha e a manteiga num bowl\n 2. Misture até ficar homogéneo ..."
+            android:hint="Instruções"
             android:minLines="5"
             android:padding="12dp"
             android:textColor="#000000"
             android:textColorHint="#888888" />
 
+        <!-- Botão Salvar -->
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
