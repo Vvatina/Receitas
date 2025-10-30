@@ -13,12 +13,12 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private TextView tvName, tvType, tvIngredients, tvInstructions;
     private DatabaseHelper dbHelper;
     private int recipeId;
+    private int userId; // usuário logado
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_recipe);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().hide();
 
         // Inicializa views
@@ -29,28 +29,33 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
+        // Recebe dados via Intent
         recipeId = getIntent().getIntExtra("recipe_id", -1);
-        if (recipeId != -1) {
-            loadRecipe(recipeId);
+        userId = getIntent().getIntExtra("USER_ID", -1);
+
+        if (recipeId != -1 && userId != -1) {
+            loadRecipe(recipeId, userId);
         } else {
-            tvName.setText("Receita não encontrada");
-            tvType.setText("");
+            showRecipeNotFound();
         }
     }
 
-    /** Carrega a receita do banco e exibe */
-    private void loadRecipe(int id) {
+    private void loadRecipe(int id, int userId) {
         Recipe recipe = dbHelper.getRecipeById(id);
-        if (recipe != null) {
+        if (recipe != null && recipe.getUserId() == userId) {
             tvName.setText(recipe.getName());
             tvType.setText("Tipo: " + recipe.getType());
             tvIngredients.setText("Ingredientes:\n" + recipe.getIngredients());
             tvInstructions.setText("Instruções:\n" + recipe.getInstructions());
         } else {
-            tvName.setText("Receita não encontrada");
-            tvType.setText("");
-            tvIngredients.setText("");
-            tvInstructions.setText("");
+            showRecipeNotFound();
         }
+    }
+
+    private void showRecipeNotFound() {
+        tvName.setText("Receita não encontrada");
+        tvType.setText("");
+        tvIngredients.setText("");
+        tvInstructions.setText("");
     }
 }

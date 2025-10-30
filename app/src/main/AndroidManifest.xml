@@ -16,7 +16,7 @@
 
         <!-- Activity principal (lançada ao abrir o app) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,6 +29,12 @@
             android:exported="false" />
         <activity
             android:name=".ViewRecipeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RegisterActivity"
             android:exported="false" />
     </application>
 

@@ -6,20 +6,20 @@ public class Recipe {
     private String ingredients;
     private String instructions;
     private String type;
-
-
+    private int userId; // novo campo para associar usuário
 
     public Recipe() {} // Construtor vazio para SQLite
 
-    public Recipe(int id, String name, String ingredients, String instructions, String type) {
+    public Recipe(int id, String name, String ingredients, String instructions, String type, int userId) {
         this.id = id;
         this.name = name;
         this.ingredients = ingredients;
         this.instructions = instructions;
         this.type = type;
+        this.userId = userId;
     }
 
-    // Getters e Setters
+    // ==================== Getters e Setters ====================
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -31,7 +31,10 @@ public class Recipe {
 
     public String getInstructions() { return instructions; }
     public void setInstructions(String instructions) { this.instructions = instructions; }
-    public String getType() { return type;}
 
+    public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
 }

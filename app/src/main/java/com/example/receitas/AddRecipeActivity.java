@@ -16,24 +16,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.receitas.database.DatabaseHelper;
 import com.example.receitas.model.Recipe;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AddRecipeActivity extends AppCompatActivity {
     private EditText etName, etIngredients, etInstructions;
     private Spinner spinnerType;
     private DatabaseHelper dbHelper;
     private Recipe recipe;
     private boolean isEdit = false;
+    private int userId; // Id do usuário logado
 
-    // Adiciona o "hint" como primeiro item
     private String[] types = {"Selecione o tipo", "Prato Principal", "Sobremesa", "Entrada", "Bebida"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().hide();
 
         dbHelper = new DatabaseHelper(this);
@@ -42,26 +38,21 @@ public class AddRecipeActivity extends AppCompatActivity {
         etInstructions = findViewById(R.id.etInstructions);
         spinnerType = findViewById(R.id.spinnerType);
 
-        // 🔹 Configura Spinner com hint cinza
+        // Recebe o userId da MainActivity
+        userId = getIntent().getIntExtra("USER_ID", -1);
+
+        // Configura Spinner com hint
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, types) {
 
             @Override
-            public boolean isEnabled(int position) {
-                // Desabilita o primeiro item (hint)
-                return position != 0;
-            }
+            public boolean isEnabled(int position) { return position != 0; }
 
             @Override
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = (TextView) view;
-                // Define cor do hint
-                if (position == 0) {
-                    tv.setTextColor(Color.parseColor("#888888")); // cinza
-                } else {
-                    tv.setTextColor(Color.BLACK); // normal
-                }
+                tv.setTextColor(position == 0 ? Color.parseColor("#888888") : Color.BLACK);
                 return view;
             }
 
@@ -69,20 +60,15 @@ public class AddRecipeActivity extends AppCompatActivity {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView tv = (TextView) view;
-                if (position == 0) {
-                    tv.setTextColor(Color.parseColor("#888888"));
-                } else {
-                    tv.setTextColor(Color.BLACK);
-                }
+                tv.setTextColor(position == 0 ? Color.parseColor("#888888") : Color.BLACK);
                 return view;
             }
         };
-
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(adapter);
-        spinnerType.setSelection(0); // mostra o hint inicialmente
+        spinnerType.setSelection(0);
 
-        // 🔹 Checa se é edição
+        // Verifica se é edição
         int recipeId = getIntent().getIntExtra("recipe_id", -1);
         if (recipeId != -1) {
             isEdit = true;
@@ -111,7 +97,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         String instructions = etInstructions.getText().toString().trim();
         String type = spinnerType.getSelectedItem().toString();
 
-        // 🔹 Verifica se o tipo é o hint
         if (name.isEmpty() || ingredients.isEmpty() || instructions.isEmpty() || spinnerType.getSelectedItemPosition() == 0) {
             Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_SHORT).show();
             return;
@@ -125,8 +110,9 @@ public class AddRecipeActivity extends AppCompatActivity {
             dbHelper.updateRecipe(recipe);
             Toast.makeText(this, "Receita atualizada!", Toast.LENGTH_SHORT).show();
         } else {
-            recipe = new Recipe(0, name, ingredients, instructions, type);
-            dbHelper.addRecipe(recipe);
+            // 🔹 Associa a receita ao usuário logado
+            recipe = new Recipe(0, name, ingredients, instructions, type, userId);
+            dbHelper.addRecipe(recipe, userId);
             Toast.makeText(this, "Receita salva!", Toast.LENGTH_SHORT).show();
         }
 
