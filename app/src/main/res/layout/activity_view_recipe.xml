@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,12 +13,23 @@
         android:background="@drawable/bg_recipe_detail"
         android:elevation="4dp">
 
+        <!-- Imagem principal da receita -->
+        <ImageView
+            android:id="@+id/imgMainRecipe"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Imagem da receita"
+            android:visibility="gone"
+            android:background="#EEEEEE" />
+
         <!-- Nome da receita -->
         <TextView
             android:id="@+id/tvRecipeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bolo de Cenoura"
+            android:text="Nome da Receita"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#4B0082"
@@ -35,7 +47,7 @@
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
-        <!-- Seção Ingredientes -->
+        <!-- Ingredientes título -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -45,6 +57,7 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
+        <!-- Ingredientes -->
         <TextView
             android:id="@+id/tvRecipeIngredients"
             android:layout_width="match_parent"
@@ -54,7 +67,7 @@
             android:textColor="#444444"
             android:layout_marginBottom="20dp" />
 
-        <!-- Seção Instruções -->
+        <!-- Modo de preparo título -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -64,14 +77,13 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <TextView
-            android:id="@+id/tvRecipeInstructions"
+        <!-- Container para passos (dinâmico) -->
+        <LinearLayout
+            android:id="@+id/layoutStepsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1. Bata todos os ingredientes no liquidificador.\n2. Despeje em uma forma untada.\n3. Asse por 40 minutos a 180ºC."
-            android:textSize="16sp"
-            android:textColor="#444444"
-            android:lineSpacingExtra="4dp" />
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp" />
 
     </LinearLayout>
 </ScrollView>

@@ -12,7 +12,6 @@
         android:padding="24dp"
         android:elevation="4dp">
 
-        <!-- Título -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,7 +22,24 @@
             android:gravity="center"
             android:layout_marginBottom="20dp" />
 
-        <!-- Nome da receita -->
+        <ImageView
+            android:id="@+id/imgMainRecipe"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="8dp"
+            android:scaleType="centerCrop"
+            android:background="#EEEEEE"
+            android:contentDescription="Foto principal da receita" />
+
+        <Button
+            android:id="@+id/btnSelectMainImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selecionar Foto da Receita"
+            android:background="@drawable/bg_button_gray"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="16dp" />
+
         <EditText
             android:id="@+id/etName"
             android:layout_width="match_parent"
@@ -35,20 +51,15 @@
             android:textColorHint="#888888"
             android:layout_marginBottom="16dp" />
 
-        <!-- Tipo da receita -->
         <Spinner
             android:id="@+id/spinnerType"
             android:layout_width="match_parent"
-            android:background="@drawable/bg_edittext"
-            android:textColor="#000000"
-            android:padding="12dp"
-            android:hint="Tipo"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp"
             android:layout_marginBottom="16dp"
-            android:popupBackground="@drawable/spinner_dropdown_bg"
-        />
+            android:popupBackground="@drawable/spinner_dropdown_bg" />
 
-        <!-- Ingredientes -->
         <EditText
             android:id="@+id/etIngredients"
             android:layout_width="match_parent"
@@ -62,21 +73,32 @@
             android:textColorHint="#888888"
             android:layout_marginBottom="16dp" />
 
-        <!-- Instruções -->
-        <EditText
-            android:id="@+id/etInstructions"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_edittext"
-            android:gravity="top"
-            android:hint="Instruções"
-            android:minLines="5"
-            android:padding="12dp"
-            android:textColor="#000000"
-            android:textColorHint="#888888" />
+            android:text="Instruções (Passo a Passo):"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#4B0082"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"/>
 
-        <!-- Botão Salvar -->
+        <LinearLayout
+            android:id="@+id/layoutInstructionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btnAddStep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ Adicionar Passo"
+            android:background="@drawable/bg_button_gray"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="24dp" />
+
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
@@ -87,7 +109,6 @@
             android:background="@drawable/bg_button_purple"
             android:layout_marginBottom="12dp" />
 
-        <!-- Botão Cancelar -->
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="match_parent"

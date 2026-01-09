@@ -6,20 +6,28 @@ public class Recipe {
     private String ingredients;
     private String instructions;
     private String type;
-    private int userId; // novo campo para associar usuário
+    private int userId;
+
+    // 🔹 Novos campos para imagens (opcionais)
+    private String mainImageUri;   // foto final da receita
+    private String stepImagesJson; // fotos dos passos (armazenadas como JSON)
 
     public Recipe() {} // Construtor vazio para SQLite
 
-    public Recipe(int id, String name, String ingredients, String instructions, String type, int userId) {
+    public Recipe(int id, String name, String ingredients, String instructions,
+                  String type, int userId, String mainImageUri, String stepImagesJson) {
         this.id = id;
         this.name = name;
         this.ingredients = ingredients;
         this.instructions = instructions;
         this.type = type;
         this.userId = userId;
+        this.mainImageUri = mainImageUri;
+        this.stepImagesJson = stepImagesJson;
     }
 
     // ==================== Getters e Setters ====================
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -37,4 +45,10 @@ public class Recipe {
 
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
+
+    public String getMainImageUri() { return mainImageUri; }
+    public void setMainImageUri(String mainImageUri) { this.mainImageUri = mainImageUri; }
+
+    public String getStepImagesJson() { return stepImagesJson; }
+    public void setStepImagesJson(String stepImagesJson) { this.stepImagesJson = stepImagesJson; }
 }
