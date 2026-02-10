@@ -4,6 +4,9 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -12,11 +15,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.receitas.database.DatabaseHelper;
 import com.example.receitas.model.Recipe;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 // JSON
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 // Java IO
 import java.io.ByteArrayOutputStream;
@@ -31,31 +36,28 @@ import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
-import com.itextpdf.layout.Document; // Importante: Deve ser este Document!
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.LineSeparator;
-import com.itextpdf.layout.element.ListItem;
 import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.AreaBreakType;
 import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Div;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.AreaBreak;
-import com.itextpdf.layout.properties.AreaBreakType;
-// ... outros elementos como Table, Image
 
 public class ViewRecipeActivity extends AppCompatActivity {
 
-    private TextView tvName, tvType, tvIngredients;
+    private TextView tvName, tvType, tvIngredients, tvAuthorName;
     private ImageView imgMainRecipe;
     private LinearLayout layoutStepsContainer;
     private Button btnExportPDF;
 
-    private DatabaseHelper dbHelper;
-    private int recipeId;
-    private int userId;
+    // FIREBASE
+    private FirebaseFirestore db;
+    private String firestoreId;
+    private Recipe currentRecipe; // Armazena a receita carregada
+    private String currentAuthorName = "Desconhecido"; // Armazena o nome do autor
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +66,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
+        // Inicializa UI
         tvName = findViewById(R.id.tvRecipeName);
         tvType = findViewById(R.id.tvRecipeType);
         tvIngredients = findViewById(R.id.tvRecipeIngredients);
@@ -71,116 +74,139 @@ public class ViewRecipeActivity extends AppCompatActivity {
         layoutStepsContainer = findViewById(R.id.layoutStepsContainer);
         btnExportPDF = findViewById(R.id.btnExportPDF);
 
-        dbHelper = new DatabaseHelper(this);
+        // Adicione um TextView no seu XML para mostrar o autor se quiser, ou use Toast
+        // tvAuthorName = findViewById(R.id.tvAuthorName);
 
-        recipeId = getIntent().getIntExtra("recipe_id", -1);
-        userId = getIntent().getIntExtra("USER_ID", -1);
+        // Inicializa Firebase
+        db = FirebaseFirestore.getInstance();
 
-        if (recipeId != -1 && userId != -1) {
-            loadRecipe(recipeId);
+        // Recupera ID passado pela Intent
+        if (getIntent().hasExtra("firestore_id")) {
+            firestoreId = getIntent().getStringExtra("firestore_id");
+            loadRecipeFromCloud(firestoreId);
         } else {
-            showRecipeNotFound();
+            Toast.makeText(this, "ID da receita não fornecido.", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         btnExportPDF.setOnClickListener(v -> {
-            Recipe recipe = dbHelper.getRecipeById(recipeId);
-            if (recipe != null) {
-                exportRecipeToDownloads(recipe);
+            if (currentRecipe != null) {
+                exportRecipeToDownloads(currentRecipe);
             } else {
-                Toast.makeText(this, "Receita não encontrada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "A aguardar carregamento da receita...", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void loadRecipe(int id) {
-        Recipe recipe = dbHelper.getRecipeById(id);
+    private void loadRecipeFromCloud(String id) {
+        db.collection("recipes").document(id).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        currentRecipe = documentSnapshot.toObject(Recipe.class);
+                        if (currentRecipe != null) {
+                            populateUI(currentRecipe);
+                            // Busca o nome do autor baseado no ID do dono
+                            fetchAuthorName(currentRecipe.getOwnerId());
+                        }
+                    } else {
+                        Toast.makeText(this, "Receita não encontrada.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Erro ao carregar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+    }
 
-        if (recipe != null && recipe.getUserId() == userId) {
-            tvName.setText(recipe.getName());
-            tvType.setText("Tipo: " + recipe.getType());
-            tvIngredients.setText("Ingredientes:\n" + recipe.getIngredients());
+    private void fetchAuthorName(String ownerId) {
+        if (ownerId == null) return;
 
-            if (recipe.getMainImageUri() != null && !recipe.getMainImageUri().isEmpty()) {
+        db.collection("users").document(ownerId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        currentAuthorName = documentSnapshot.getString("username");
+                        // Se tiver um TextView para o autor, atualize aqui:
+                        // tvAuthorName.setText("Por: " + currentAuthorName);
+                    }
+                });
+    }
+
+    private void populateUI(Recipe recipe) {
+        tvName.setText(recipe.getName());
+        tvType.setText("Tipo: " + recipe.getType());
+        tvIngredients.setText("Ingredientes:\n" + recipe.getIngredients());
+
+        // Carrega Imagem Principal
+        if (recipe.getMainImageUri() != null && !recipe.getMainImageUri().isEmpty()) {
+            try {
                 imgMainRecipe.setImageURI(Uri.parse(recipe.getMainImageUri()));
                 imgMainRecipe.setVisibility(ImageView.VISIBLE);
-            } else {
+            } catch (Exception e) {
+                // Se a imagem for local de outro aparelho, não vai carregar
                 imgMainRecipe.setVisibility(ImageView.GONE);
             }
+        } else {
+            imgMainRecipe.setVisibility(ImageView.GONE);
+        }
 
-            layoutStepsContainer.removeAllViews();
+        layoutStepsContainer.removeAllViews();
 
-            if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
-                try {
-                    JSONArray stepsArray = new JSONArray(recipe.getInstructions());
-                    for (int i = 0; i < stepsArray.length(); i++) {
-                        String stepText = stepsArray.optJSONObject(i).optString("instructionText", "");
-                        String imageUri = stepsArray.optJSONObject(i).optString("imageUri", null);
+        if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
+            try {
+                JSONArray stepsArray = new JSONArray(recipe.getInstructions());
+                for (int i = 0; i < stepsArray.length(); i++) {
+                    JSONObject stepObj = stepsArray.optJSONObject(i);
+                    String stepText = stepObj.optString("instructionText", "");
+                    String imageUri = stepObj.optString("imageUri", null);
 
-                        // --- Título do Passo (Ex: Passo 1) ---
-                        TextView tvStepTitle = new TextView(this);
-                        tvStepTitle.setText("Passo " + (i + 1) + ":");
-                        tvStepTitle.setTextColor(getColor(R.color.purple_700));
-                        tvStepTitle.setTextSize(22f);
-                        tvStepTitle.setTypeface(null, android.graphics.Typeface.BOLD);
-                        tvStepTitle.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
-                        layoutStepsContainer.addView(tvStepTitle);
+                    // --- Título do Passo ---
+                    TextView tvStepTitle = new TextView(this);
+                    tvStepTitle.setText("Passo " + (i + 1) + ":");
+                    tvStepTitle.setTextColor(getColor(R.color.purple_700)); // Certifique-se que essa cor existe ou use Color.parseColor("#7B1FA2")
+                    tvStepTitle.setTextSize(22f);
+                    tvStepTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+                    tvStepTitle.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
+                    layoutStepsContainer.addView(tvStepTitle);
 
-                        // --- Texto da Instrução (Ex: Misture a farinha...) ---
-                        TextView tvStepText = new TextView(this);
-                        tvStepText.setText(stepText);
-                        tvStepText.setTextSize(16f);
+                    // --- Texto da Instrução ---
+                    TextView tvStepText = new TextView(this);
+                    tvStepText.setText(stepText);
+                    tvStepText.setTextSize(16f);
+                    tvStepText.setTextColor(android.graphics.Color.BLACK);
+                    tvStepText.setPadding(0, 5, 0, 20);
+                    layoutStepsContainer.addView(tvStepText);
 
-                        // CORREÇÃO: Define a cor do texto para PRETO explicitamente
-                        tvStepText.setTextColor(android.graphics.Color.BLACK);
-
-                        // Opcional: Adiciona um pouco de margem/padding para não colar na borda
-                        tvStepText.setPadding(0, 5, 0, 20);
-
-                        layoutStepsContainer.addView(tvStepText);
-
-                        // --- Imagem do Passo ---
-                        if (imageUri != null && !imageUri.isEmpty()) {
-                            ImageView ivStep = new ImageView(this);
+                    // --- Imagem do Passo ---
+                    if (imageUri != null && !imageUri.isEmpty()) {
+                        ImageView ivStep = new ImageView(this);
+                        try {
                             ivStep.setImageURI(Uri.parse(imageUri));
                             ivStep.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-                            // Ajuste de layout da imagem no app para não ficar gigante
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT,
-                                    600 // Altura fixa em pixels (ajuste conforme necessário)
-                            );
+                                    LinearLayout.LayoutParams.MATCH_PARENT, 600);
                             params.setMargins(0, 10, 0, 30);
                             ivStep.setLayoutParams(params);
-
                             layoutStepsContainer.addView(ivStep);
+                        } catch (Exception e) {
+                            // Ignora imagem quebrada
                         }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } else {
-            showRecipeNotFound();
         }
     }
 
-    private void showRecipeNotFound() {
-        Toast.makeText(this, "Erro: Receita não pode ser carregada.", Toast.LENGTH_LONG).show();
-        finish();
-    }
-
     // =====================================
-    // EXPORTAR PDF (Corrigido e Bonito)
-    // =====================================
-    // =====================================
-    // EXPORTAR PDF - ESTRUTURA LIVRO (COM NOME DO UTILIZADOR)
+    // EXPORTAR PDF
     // =====================================
     private void exportRecipeToDownloads(Recipe recipe) {
         try {
             String fileName = "Receita_" + recipe.getName().replaceAll("\\W+", "_") + ".pdf";
             Uri pdfUri;
 
-            // Configuração do Arquivo
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 ContentValues values = new ContentValues();
                 values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName);
@@ -188,8 +214,8 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download/Receitas");
                 pdfUri = getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
             } else {
-                File downloadsDir = new File(android.os.Environment.getExternalStoragePublicDirectory(
-                        android.os.Environment.DIRECTORY_DOWNLOADS), "Receitas");
+                File downloadsDir = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOWNLOADS), "Receitas");
                 if (!downloadsDir.exists()) downloadsDir.mkdirs();
                 File pdfFile = new File(downloadsDir, fileName);
                 pdfUri = Uri.fromFile(pdfFile);
@@ -197,59 +223,37 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
             if (pdfUri == null) return;
 
-            // Inicialização do PDF
             PdfWriter writer = new PdfWriter(getContentResolver().openOutputStream(pdfUri));
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            // --- DEFINIÇÃO DAS CORES (VARIAÇÕES DE ROXO) ---
-            DeviceRgb colorDeepPurple = new DeviceRgb(74, 20, 140);   // Roxo Escuro (Títulos Principais)
-            DeviceRgb colorBrightPurple = new DeviceRgb(156, 39, 176); // Roxo Vibrante (Destaques/Passos)
-            DeviceRgb colorText = new DeviceRgb(50, 50, 50);          // Cinza Escuro (Texto comum)
+            DeviceRgb colorDeepPurple = new DeviceRgb(74, 20, 140);
+            DeviceRgb colorBrightPurple = new DeviceRgb(156, 39, 176);
+            DeviceRgb colorText = new DeviceRgb(50, 50, 50);
 
-            // ---------------------------------------------------------
-            // PÁGINA 1: CAPA
-            // ---------------------------------------------------------
-            document.add(new Paragraph("\n\n")); // Espaço no topo
-
+            // CAPA
+            document.add(new Paragraph("\n\n"));
             document.add(new Paragraph(recipe.getName().toUpperCase())
-                    .setFontSize(26f)
-                    .setBold()
-                    .setFontColor(colorDeepPurple) // Roxo Escuro
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setFontSize(26f).setBold().setFontColor(colorDeepPurple).setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(recipe.getType())
-                    .setFontSize(14f)
-                    .setItalic()
-                    .setFontColor(ColorConstants.GRAY)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(20f));
+                    .setFontSize(14f).setItalic().setFontColor(ColorConstants.GRAY)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20f));
 
             if (recipe.getMainImageUri() != null && !recipe.getMainImageUri().isEmpty()) {
                 addImageToPDFStyled(recipe.getMainImageUri(), document, true);
             }
 
-            // Busca o nome e adiciona ao PDF
-            String userName = dbHelper.getUserName(recipe.getUserId());
+            // USA O NOME CARREGADO DO FIREBASE
+            document.add(new Paragraph("\n\nReceita por " + currentAuthorName + " no app Receitaria")
+                    .setFontSize(12f).setFontColor(ColorConstants.DARK_GRAY).setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("\n\nReceita por " + userName + " no app Receitaria")
-                    .setFontSize(12f)
-                    .setFontColor(ColorConstants.DARK_GRAY)
-                    .setTextAlignment(TextAlignment.CENTER));
-
-            // FORÇA PÁGINA 2
             document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
-            // ---------------------------------------------------------
-            // PÁGINA 2: INGREDIENTES
-            // ---------------------------------------------------------
+            // INGREDIENTES
             document.add(new Paragraph("LISTA DE INGREDIENTES")
-                    .setFontSize(18f)
-                    .setBold()
-                    .setFontColor(colorDeepPurple) // Roxo Escuro
-                    .setUnderline()
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(20f));
+                    .setFontSize(18f).setBold().setFontColor(colorDeepPurple).setUnderline()
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20f));
 
             com.itextpdf.layout.element.Table ingredTable = new com.itextpdf.layout.element.Table(1)
                     .setWidth(UnitValue.createPercentValue(100));
@@ -259,26 +263,18 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 if (!item.trim().isEmpty()) {
                     com.itextpdf.layout.element.Cell cell = new com.itextpdf.layout.element.Cell()
                             .add(new Paragraph("•  " + item.trim()).setFontSize(12f).setFontColor(colorText))
-                            .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
-                            .setPaddingBottom(5f);
+                            .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER).setPaddingBottom(5f);
                     ingredTable.addCell(cell);
                 }
             }
             document.add(ingredTable);
 
-            // FORÇA PÁGINA 3
             document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
-            // ---------------------------------------------------------
-            // PÁGINA 3+: MODO DE PREPARO
-            // ---------------------------------------------------------
+            // MODULO DE PREPARO
             document.add(new Paragraph("MODO DE PREPARO")
-                    .setFontSize(18f)
-                    .setBold()
-                    .setFontColor(colorDeepPurple) // Roxo Escuro
-                    .setUnderline()
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(20f));
+                    .setFontSize(18f).setBold().setFontColor(colorDeepPurple).setUnderline()
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20f));
 
             if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
                 JSONArray stepsArray = new JSONArray(recipe.getInstructions());
@@ -286,28 +282,19 @@ public class ViewRecipeActivity extends AppCompatActivity {
                     String stepText = stepsArray.optJSONObject(i).optString("instructionText", "");
                     String imageUri = stepsArray.optJSONObject(i).optString("imageUri", null);
 
-                    // Título do Passo (Usando a variação Roxo Vibrante)
                     document.add(new Paragraph("PASSO " + (i + 1))
-                            .setFontSize(14f)
-                            .setBold()
-                            .setFontColor(colorBrightPurple) // <--- Roxo mais claro/vibrante
-                            .setMarginTop(15f));
+                            .setFontSize(14f).setBold().setFontColor(colorBrightPurple).setMarginTop(15f));
 
-                    // Texto do Passo
                     document.add(new Paragraph(stepText)
-                            .setFontSize(12f)
-                            .setTextAlignment(TextAlignment.JUSTIFIED)
-                            .setFontColor(colorText)
-                            .setMarginBottom(10f));
+                            .setFontSize(12f).setTextAlignment(TextAlignment.JUSTIFIED)
+                            .setFontColor(colorText).setMarginBottom(10f));
 
-                    // Imagem do Passo (Se houver)
                     if (imageUri != null && !imageUri.isEmpty()) {
                         addImageToPDFStyled(imageUri, document, false);
                     }
 
-                    // Linha Separadora
                     SolidLine line = new SolidLine(0.5f);
-                    line.setColor(ColorConstants.LIGHT_GRAY); // Mantive cinza para não poluir, mas pode por roxo claro se quiser
+                    line.setColor(ColorConstants.LIGHT_GRAY);
                     LineSeparator ls = new LineSeparator(line);
                     ls.setMarginTop(10f);
                     document.add(ls);
@@ -317,7 +304,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
             document.close();
             Toast.makeText(this, "PDF salvo em Downloads!", Toast.LENGTH_LONG).show();
 
-            // Abrir PDF
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(pdfUri, "application/pdf");
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -328,10 +314,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
             Toast.makeText(this, "Erro ao gerar PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
-    // Método para adicionar imagem mantendo proporção e qualidade
-    // Método CORRIGIDO para imagens proporcionais
-    // Substitua este método no seu código
-// Método de Imagem com Tamanho Reduzido para os Passos
+
     private void addImageToPDFStyled(String imageUri, Document document, boolean isMainImage) {
         if (imageUri == null || imageUri.isEmpty()) return;
 
@@ -343,35 +326,24 @@ public class ViewRecipeActivity extends AppCompatActivity {
             Image pdfImage = new Image(data);
 
             if (isMainImage) {
-                // CAPA: Mantém 50% da largura (Tamanho médio/grande)
                 pdfImage.setWidth(UnitValue.createPercentValue(50));
                 pdfImage.setHorizontalAlignment(HorizontalAlignment.CENTER);
             } else {
-                // PASSOS: MODO MINIATURA
-                // 50f = aprox 1.7cm. É bem pequeno.
                 pdfImage.setWidth(50f);
-
                 pdfImage.setHorizontalAlignment(HorizontalAlignment.CENTER);
-
-                // Remove margens extras para não ocupar espaço em branco
                 pdfImage.setMarginTop(2f);
                 pdfImage.setMarginBottom(2f);
             }
-
-            // Garante que a altura acompanhe a largura sem distorcer
             pdfImage.setAutoScaleHeight(true);
-
             document.add(pdfImage);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    // Auxiliar para ler bytes do arquivo
+
     private byte[] getBytesFromUri(Uri uri) {
         try (InputStream iStream = getContentResolver().openInputStream(uri);
              ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream()) {
-
             int bufferSize = 1024;
             byte[] buffer = new byte[bufferSize];
             int len;

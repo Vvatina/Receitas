@@ -15,7 +15,6 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "recipes.db";
-    // Versão 5 é a versão que adicionou as colunas de imagem
     private static final int DATABASE_VERSION = 5;
 
     // Tabela de receitas
@@ -23,20 +22,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_INGREDIENTS = "ingredients";
-    private static final String COLUMN_INSTRUCTIONS = "instructions"; // Agora armazena o JSON de passos (texto + imagem)
+    private static final String COLUMN_INSTRUCTIONS = "instructions";
     private static final String COLUMN_TYPE = "type";
     private static final String COLUMN_USER_ID_FK = "user_id";
     private static final String COLUMN_MAIN_IMAGE = "main_image";
-    private static final String COLUMN_STEP_IMAGES = "step_images"; // Coluna mantida para compatibilidade
+    private static final String COLUMN_STEP_IMAGES = "step_images";
 
-    // Tabela de usuários
+    // Tabela de usuários (Mantida apenas para leitura legada)
     private static final String TABLE_USERS = "users";
     private static final String COLUMN_USER_ID = "user_id";
     private static final String COLUMN_USERNAME = "username";
     private static final String COLUMN_EMAIL = "email";
     private static final String COLUMN_PASSWORD = "password";
 
-    // SQL para criar tabela de usuários
+    // SQL Criação (Mantido igual)
     private static final String CREATE_USERS_TABLE =
             "CREATE TABLE IF NOT EXISTS " + TABLE_USERS + " (" +
                     COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -44,7 +43,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_EMAIL + " TEXT UNIQUE NOT NULL, " +
                     COLUMN_PASSWORD + " TEXT NOT NULL);";
 
-    // SQL para criar tabela de receitas
     private static final String CREATE_RECIPES_TABLE =
             "CREATE TABLE IF NOT EXISTS " + TABLE_RECIPES + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -71,12 +69,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 5) {
-            Log.d("DatabaseHelper", "Atualizando DB de " + oldVersion + " para " + newVersion);
             try {
                 db.execSQL("ALTER TABLE " + TABLE_RECIPES + " ADD COLUMN " + COLUMN_MAIN_IMAGE + " TEXT;");
                 db.execSQL("ALTER TABLE " + TABLE_RECIPES + " ADD COLUMN " + COLUMN_STEP_IMAGES + " TEXT;");
             } catch (Exception e) {
-                Log.e("DatabaseHelper", "Erro ao adicionar colunas.", e);
+                e.printStackTrace();
             }
         }
     }
@@ -122,18 +119,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // NOVO MÉTODO: Busca o nome do usuário pelo ID (Usado no PDF)
     public String getUserName(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String name = "Chef Anônimo"; // Valor padrão caso não encontre
-
-        Cursor cursor = db.rawQuery("SELECT " + COLUMN_USERNAME +
-                        " FROM " + TABLE_USERS + " WHERE " + COLUMN_USER_ID + "=?",
-                new String[]{String.valueOf(userId)});
-
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                name = cursor.getString(0); // Pega a primeira coluna (username)
-            }
-            cursor.close();
+        String name = "";
+        Cursor cursor = db.rawQuery("SELECT " + COLUMN_USERNAME + " FROM " + TABLE_USERS + " WHERE " + COLUMN_USER_ID + "=?", new String[]{String.valueOf(userId)});
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(0);
         }
+        cursor.close();
         db.close();
         return name;
     }
@@ -145,7 +136,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, recipe.getName());
         values.put(COLUMN_INGREDIENTS, recipe.getIngredients());
-        values.put(COLUMN_INSTRUCTIONS, recipe.getInstructions()); // JSON de Passos
+        values.put(COLUMN_INSTRUCTIONS, recipe.getInstructions());
         values.put(COLUMN_TYPE, recipe.getType());
         values.put(COLUMN_USER_ID_FK, userId);
         values.put(COLUMN_MAIN_IMAGE, recipe.getMainImageUri());
@@ -163,7 +154,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TYPE, recipe.getType());
         values.put(COLUMN_MAIN_IMAGE, recipe.getMainImageUri());
 
-        db.update(TABLE_RECIPES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(recipe.getId())});
+        // CORREÇÃO AQUI: Use getSqliteId() em vez de getId()
+        db.update(TABLE_RECIPES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(recipe.getSqliteId())});
+
         db.close();
     }
 
@@ -200,6 +193,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return recipe;
     }
+
+
 
     public List<Recipe> getRecipesByTypeAndUser(String type, int userId) {
         List<Recipe> recipes = new ArrayList<>();
@@ -252,14 +247,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private Recipe buildRecipeFromCursor(Cursor cursor) {
         Recipe recipe = new Recipe();
-        recipe.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+
+        // CORREÇÃO 1: Usar setSqliteId (pois getId não existe mais ou é string)
+        recipe.setSqliteId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+
         recipe.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
         recipe.setIngredients(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTS)));
         recipe.setInstructions(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INSTRUCTIONS)));
         recipe.setType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE)));
-        recipe.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID_FK)));
+
+        // CORREÇÃO 2: Ignoramos o setUserId antigo, pois agora usamos ownerId (String).
+        // A MainActivity vai definir o ownerId atual ao migrar.
+
         recipe.setMainImageUri(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MAIN_IMAGE)));
         recipe.setStepImagesJson(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STEP_IMAGES)));
+
         return recipe;
     }
 }

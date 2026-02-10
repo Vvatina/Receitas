@@ -2,15 +2,21 @@ package com.example.receitas;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.receitas.database.DatabaseHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -18,7 +24,8 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private TextView registerTextView;
 
-    private DatabaseHelper dbHelper;
+    // Substituímos DatabaseHelper por FirebaseAuth
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +34,8 @@ public class LoginActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        dbHelper = new DatabaseHelper(this);
+        // Inicializa o Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
 
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -38,30 +46,15 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 String email = emailEditText.getText().toString().trim();
                 String password = passwordEditText.getText().toString().trim();
 
-                if(email.isEmpty() || password.isEmpty()) {
+                if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
                     Toast.makeText(LoginActivity.this, "Preencha todos os campos", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                boolean isValid = dbHelper.checkUser(email, password);
-
-                if(isValid) {
-                    int userId = dbHelper.getUserId(email);
-
-                    Toast.makeText(LoginActivity.this, "Login bem-sucedido!", Toast.LENGTH_SHORT).show();
-
-                    // Ir para a MainActivity passando o userId
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("USER_ID", userId);
-                    startActivity(intent);
-                    finish(); // fecha a tela de login
-                } else {
-                    Toast.makeText(LoginActivity.this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show();
-                }
+                loginUser(email, password);
             }
         });
 
@@ -73,5 +66,50 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    // Verifica se o utilizador já está logado ao abrir o app
+    @Override
+    public void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            goToMainActivity();
+        }
+    }
+
+    private void loginUser(String email, String password) {
+        // Desabilita botão para evitar cliques duplos
+        loginButton.setEnabled(false);
+        loginButton.setText("A entrar...");
+
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        loginButton.setEnabled(true);
+                        loginButton.setText("ENTRAR");
+
+                        if (task.isSuccessful()) {
+                            // Sucesso
+                            Toast.makeText(LoginActivity.this, "Bem-vindo!", Toast.LENGTH_SHORT).show();
+                            goToMainActivity();
+                        } else {
+                            // Falha
+                            String erro = "Falha no login.";
+                            if (task.getException() != null) {
+                                erro = task.getException().getMessage(); // Mostra o erro real do Firebase
+                            }
+                            Toast.makeText(LoginActivity.this, erro, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    private void goToMainActivity() {
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        // Não precisamos mais passar "USER_ID" extra, a MainActivity pega do Auth.
+        startActivity(intent);
+        finish(); // Fecha o Login para não voltar ao clicar em "Voltar"
     }
 }

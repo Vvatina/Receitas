@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.receitas.R;
 import com.example.receitas.model.Recipe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
@@ -27,7 +28,8 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
     // Construtor
     public RecipeAdapter(List<Recipe> recipes, OnRecipeClickListener listener) {
-        this.recipes = recipes;
+        // Garante que a lista nunca seja null para evitar crashes
+        this.recipes = recipes != null ? recipes : new ArrayList<>();
         this.listener = listener;
     }
 
@@ -45,26 +47,39 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
         // Preenche os dados
         holder.tvName.setText(recipe.getName());
-        holder.tvType.setText(recipe.getType()); // exibe o tipo da receita
+
+        // Verificação de segurança para o Tipo
+        if (recipe.getType() != null) {
+            holder.tvType.setText(recipe.getType());
+        } else {
+            holder.tvType.setText("");
+        }
 
         // Clique no botão "Visualizar"
-        holder.btnView.setOnClickListener(v -> listener.onViewClick(recipe));
+        // Usamos setOnClickListener com lambda para passar o objeto recipe atual
+        holder.btnView.setOnClickListener(v -> {
+            if (listener != null) listener.onViewClick(recipe);
+        });
 
         // Clique no botão "Editar"
-        holder.btnEdit.setOnClickListener(v -> listener.onEditClick(recipe));
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) listener.onEditClick(recipe);
+        });
 
         // Clique no botão "Excluir"
-        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(recipe));
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) listener.onDeleteClick(recipe);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return recipes != null ? recipes.size() : 0;
+        return recipes.size();
     }
 
-    // Atualiza a lista
+    // Atualiza a lista quando os dados mudam no Firestore
     public void updateList(List<Recipe> newRecipes) {
-        this.recipes = newRecipes;
+        this.recipes = newRecipes != null ? newRecipes : new ArrayList<>();
         notifyDataSetChanged();
     }
 
@@ -72,12 +87,14 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
     static class RecipeViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         TextView tvType;
-        TextView btnView, btnEdit, btnDelete;
+        // Mudei para 'View' para ser compatível tanto com Button quanto com ImageButton ou TextView
+        View btnView, btnEdit, btnDelete;
 
         public RecipeViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
-            tvType = itemView.findViewById(R.id.tvType); // novo campo
+            tvType = itemView.findViewById(R.id.tvType);
+
             btnView = itemView.findViewById(R.id.btnView);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
