@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TYPE = "type";
     private static final String COLUMN_USER_ID_FK = "user_id";
     private static final String COLUMN_MAIN_IMAGE = "main_image";
-    private static final String COLUMN_STEP_IMAGES = "step_images"; // Coluna mantida para compatibilidade, mas não mais usada para escrita
+    private static final String COLUMN_STEP_IMAGES = "step_images"; // Coluna mantida para compatibilidade
 
     // Tabela de usuários
     private static final String TABLE_USERS = "users";
@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_EMAIL + " TEXT UNIQUE NOT NULL, " +
                     COLUMN_PASSWORD + " TEXT NOT NULL);";
 
-    // SQL para criar tabela de receitas (mantém todas as colunas existentes na V5)
+    // SQL para criar tabela de receitas
     private static final String CREATE_RECIPES_TABLE =
             "CREATE TABLE IF NOT EXISTS " + TABLE_RECIPES + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -70,16 +70,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Lógica de atualização para garantir que as colunas de imagem (V5) existam
         if (oldVersion < 5) {
-            Log.d("DatabaseHelper", "Atualizando DB de " + oldVersion + " para " + newVersion + ". Adicionando colunas de imagem.");
+            Log.d("DatabaseHelper", "Atualizando DB de " + oldVersion + " para " + newVersion);
             try {
-                // Adiciona colunas se não existirem
                 db.execSQL("ALTER TABLE " + TABLE_RECIPES + " ADD COLUMN " + COLUMN_MAIN_IMAGE + " TEXT;");
                 db.execSQL("ALTER TABLE " + TABLE_RECIPES + " ADD COLUMN " + COLUMN_STEP_IMAGES + " TEXT;");
             } catch (Exception e) {
-                // Captura exceção se a coluna já existir (o que é comum em testes)
-                Log.e("DatabaseHelper", "Erro ao adicionar colunas. Elas podem já existir.", e);
+                Log.e("DatabaseHelper", "Erro ao adicionar colunas.", e);
             }
         }
     }
@@ -122,6 +119,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userId;
     }
 
+    // NOVO MÉTODO: Busca o nome do usuário pelo ID (Usado no PDF)
+    public String getUserName(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String name = "Chef Anônimo"; // Valor padrão caso não encontre
+
+        Cursor cursor = db.rawQuery("SELECT " + COLUMN_USERNAME +
+                        " FROM " + TABLE_USERS + " WHERE " + COLUMN_USER_ID + "=?",
+                new String[]{String.valueOf(userId)});
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                name = cursor.getString(0); // Pega a primeira coluna (username)
+            }
+            cursor.close();
+        }
+        db.close();
+        return name;
+    }
+
     // ===================== RECEITAS =====================
 
     public void addRecipe(Recipe recipe, int userId) {
@@ -132,9 +148,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_INSTRUCTIONS, recipe.getInstructions()); // JSON de Passos
         values.put(COLUMN_TYPE, recipe.getType());
         values.put(COLUMN_USER_ID_FK, userId);
-
         values.put(COLUMN_MAIN_IMAGE, recipe.getMainImageUri());
-        // A coluna COLUMN_STEP_IMAGES NÃO é mais preenchida, pois seu conteúdo está em COLUMN_INSTRUCTIONS.
 
         db.insert(TABLE_RECIPES, null, values);
         db.close();
@@ -148,7 +162,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_INSTRUCTIONS, recipe.getInstructions()); // JSON de Passos
         values.put(COLUMN_TYPE, recipe.getType());
         values.put(COLUMN_MAIN_IMAGE, recipe.getMainImageUri());
-        // A coluna COLUMN_STEP_IMAGES NÃO é mais atualizada.
 
         db.update(TABLE_RECIPES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(recipe.getId())});
         db.close();
@@ -167,8 +180,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                Recipe recipe = buildRecipeFromCursor(cursor);
-                recipes.add(recipe);
+                recipes.add(buildRecipeFromCursor(cursor));
             } while (cursor.moveToNext());
         }
 
@@ -210,7 +222,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return recipes;
     }
 
-    // Método original (agora obsoleto, mas mantido por segurança)
     public List<Recipe> getRecipesByType(String type) {
         List<Recipe> recipes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -239,25 +250,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return recipes;
     }
 
-    // Método auxiliar para montar o objeto Recipe (leitura)
     private Recipe buildRecipeFromCursor(Cursor cursor) {
         Recipe recipe = new Recipe();
         recipe.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
         recipe.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
         recipe.setIngredients(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTS)));
-
-        // 🔹 COLUMN_INSTRUCTIONS agora contém o JSON dos Passos
         recipe.setInstructions(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INSTRUCTIONS)));
-
         recipe.setType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE)));
         recipe.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID_FK)));
-
         recipe.setMainImageUri(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MAIN_IMAGE)));
-
-        // 🔹 Lendo COLUMN_STEP_IMAGES (mantida para evitar crashs em leituras antigas),
-        // mas o AddRecipeActivity irá ignorar esta informação em favor de COLUMN_INSTRUCTIONS.
         recipe.setStepImagesJson(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STEP_IMAGES)));
-
         return recipe;
     }
 }
