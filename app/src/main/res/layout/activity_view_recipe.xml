@@ -1,100 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_form_card"
-    android:padding="16dp">
+    android:background="@drawable/papel_fundo"
+    android:fillViewport="true">
 
-    <LinearLayout
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:background="@drawable/bg_recipe_detail"
-        android:elevation="4dp">
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp">
 
-        <!-- Imagem principal da receita -->
-        <ImageView
-            android:id="@+id/imgMainRecipe"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginBottom="16dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Imagem da receita"
-            android:visibility="gone"
-            android:background="#EEEEEE" />
-
-        <!-- Nome da receita -->
-        <TextView
-            android:id="@+id/tvRecipeName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Nome da Receita"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#4B0082"
-            android:gravity="center"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Tipo da receita -->
-        <TextView
-            android:id="@+id/tvRecipeType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Tipo: Sobremesa"
-            android:textSize="16sp"
-            android:textColor="#777777"
-            android:gravity="center"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Ingredientes título -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ingredientes"
-            android:textColor="#6A1B9A"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Ingredientes -->
-        <TextView
-            android:id="@+id/tvRecipeIngredients"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="3 ovos\n2 xícaras de farinha de trigo\n1 xícara de açúcar"
-            android:textSize="16sp"
-            android:textColor="#444444"
-            android:layout_marginBottom="20dp" />
-
-        <!-- Modo de preparo título -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Modo de Preparo"
-            android:textColor="#6A1B9A"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Container para passos (dinâmico) -->
         <LinearLayout
-            android:id="@+id/layoutStepsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="20dp" />
+            android:background="@drawable/papel_fundo"
+            android:padding="24dp">
 
-        <!-- Botão para exportar PDF -->
-        <Button
-            android:id="@+id/btnExportPDF"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Exportar para PDF"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:backgroundTint="#4B0082"
-            android:textColor="#FFFFFF"
-            android:textAllCaps="false" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="24dp">
 
-    </LinearLayout>
+                <ImageView
+                    android:id="@+id/imgMainRecipe"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:scaleType="centerCrop"
+                    android:background="#EEE"
+                    android:padding="8dp"
+                    android:contentDescription="Imagem da receita" />
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/tvRecipeName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nome da Receita"
+                android:textSize="52sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tangerine_regular"
+                android:textColor="@color/ink_color"
+                android:gravity="center"
+                android:lineSpacingExtra="-8dp"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:text="Categoria: "
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:textSize="28sp"
+                    android:textColor="#8D6E63"/>
+
+                <TextView
+                    android:id="@+id/tvRecipeType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sobremesa"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:textStyle="bold"
+                    android:textSize="28sp"
+                    android:textColor="@color/ink_color"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="150dp"
+                android:layout_height="2dp"
+                android:layout_gravity="center_horizontal"
+                android:background="#BAB095"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ingredientes"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink_color"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tvRecipeIngredients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3 ovos\n2 xícaras de farinha de trigo\n1 xícara de açúcar"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="28sp"
+                android:textColor="@color/ink_color"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="32dp"
+                android:paddingStart="8dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="1dp"
+                    android:background="#BAB095"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Modo de Preparo"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink_color"
+                    android:layout_marginHorizontal="12dp"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#BAB095"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutStepsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp" />
+
+            <Button
+                android:id="@+id/btnExportPDF"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Exportar para PDF"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_vintage_button"
+                android:elevation="6dp"
+                android:layout_marginBottom="12dp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </ScrollView>

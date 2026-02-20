@@ -1,6 +1,8 @@
 package com.example.receitas;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -42,6 +44,9 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         registerTextView = findViewById(R.id.registerTextView);
 
+        // --- APLICAR ESTILO PADRONIZADO (Cor #BAB095) ---
+        estilizarBotao(loginButton);
+
         // Botão de login
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,6 +71,27 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    /**
+     * Método para aplicar a cor #BAB095 e bordas arredondadas ao botão
+     */
+    private void estilizarBotao(Button btn) {
+        // Remove a cor de "tint" padrão do Android (que costuma ser roxa)
+        btn.setBackgroundTintList(null);
+
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+
+        // Define a cor solicitada: #BAB095
+        drawable.setColor(Color.parseColor("#BAB095"));
+
+        // Define bordas arredondadas
+        drawable.setCornerRadius(14f);
+
+        btn.setBackground(drawable);
+        btn.setTextColor(Color.WHITE); // Texto branco
+        btn.setAllCaps(false); // Mantém maiúsculas/minúsculas conforme texto original
     }
 
     // Verifica se o utilizador já está logado ao abrir o app
@@ -108,7 +134,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void goToMainActivity() {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        // Não precisamos mais passar "USER_ID" extra, a MainActivity pega do Auth.
         startActivity(intent);
         finish(); // Fecha o Login para não voltar ao clicar em "Voltar"
     }

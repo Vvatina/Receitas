@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.receitas.R;
 import com.example.receitas.model.Recipe;
+import com.google.firebase.auth.FirebaseAuth; // IMPORTANTE
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,19 +19,25 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
     private List<Recipe> recipes;
     private OnRecipeClickListener listener;
+    private String currentUserId; // Armazena o ID de quem está a usar a app
 
     // Interface para cliques
     public interface OnRecipeClickListener {
         void onViewClick(Recipe recipe);
         void onEditClick(Recipe recipe);
         void onDeleteClick(Recipe recipe);
+        void onShareClick(Recipe recipe);
     }
 
     // Construtor
     public RecipeAdapter(List<Recipe> recipes, OnRecipeClickListener listener) {
-        // Garante que a lista nunca seja null para evitar crashes
         this.recipes = recipes != null ? recipes : new ArrayList<>();
         this.listener = listener;
+
+        // Obtém o ID do utilizador atual para verificar permissões
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            this.currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
     }
 
     @NonNull
@@ -48,27 +55,51 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
         // Preenche os dados
         holder.tvName.setText(recipe.getName());
 
-        // Verificação de segurança para o Tipo
         if (recipe.getType() != null) {
-            holder.tvType.setText(recipe.getType());
+            holder.tvType.setText(recipe.getType()); // Removi o prefixo "Tipo:" para ficar mais limpo, opcional
         } else {
             holder.tvType.setText("");
         }
 
-        // Clique no botão "Visualizar"
-        // Usamos setOnClickListener com lambda para passar o objeto recipe atual
+        // ==================================================================
+        // LÓGICA DE PERMISSÕES (VISIBILIDADE DOS BOTÕES)
+        // ==================================================================
+
+        // 1. BOTÃO EDITAR
+        // Usa o método inteligente do seu Modelo para decidir
+        if (recipe.canEdit(currentUserId)) {
+            holder.btnEdit.setVisibility(View.VISIBLE);
+            // Configura o clique apenas se estiver visível
+            holder.btnEdit.setOnClickListener(v -> {
+                if (listener != null) listener.onEditClick(recipe);
+            });
+        } else {
+            holder.btnEdit.setVisibility(View.GONE); // Esconde se for apenas leitor
+        }
+
+        // 2. BOTÕES DE DONO (APAGAR E PARTILHAR)
+        // Geralmente, apenas o dono pode apagar a receita ou partilhar com mais pessoas
+        boolean isOwner = recipe.getOwnerId() != null && recipe.getOwnerId().equals(currentUserId);
+
+        if (isOwner) {
+            holder.btnDelete.setVisibility(View.VISIBLE);
+            holder.btnShare.setVisibility(View.VISIBLE);
+
+            holder.btnDelete.setOnClickListener(v -> {
+                if (listener != null) listener.onDeleteClick(recipe);
+            });
+
+            holder.btnShare.setOnClickListener(v -> {
+                if (listener != null) listener.onShareClick(recipe);
+            });
+        } else {
+            holder.btnDelete.setVisibility(View.GONE);
+            holder.btnShare.setVisibility(View.GONE);
+        }
+
+        // 3. BOTÃO VISUALIZAR (Sempre visível para todos)
         holder.btnView.setOnClickListener(v -> {
             if (listener != null) listener.onViewClick(recipe);
-        });
-
-        // Clique no botão "Editar"
-        holder.btnEdit.setOnClickListener(v -> {
-            if (listener != null) listener.onEditClick(recipe);
-        });
-
-        // Clique no botão "Excluir"
-        holder.btnDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDeleteClick(recipe);
         });
     }
 
@@ -77,7 +108,6 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
         return recipes.size();
     }
 
-    // Atualiza a lista quando os dados mudam no Firestore
     public void updateList(List<Recipe> newRecipes) {
         this.recipes = newRecipes != null ? newRecipes : new ArrayList<>();
         notifyDataSetChanged();
@@ -87,8 +117,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
     static class RecipeViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         TextView tvType;
-        // Mudei para 'View' para ser compatível tanto com Button quanto com ImageButton ou TextView
-        View btnView, btnEdit, btnDelete;
+        View btnView, btnEdit, btnDelete, btnShare;
 
         public RecipeViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -98,6 +127,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
             btnView = itemView.findViewById(R.id.btnView);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnShare = itemView.findViewById(R.id.btnShare);
         }
     }
 }

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@drawable/fundo_tela">
 
     <LinearLayout
         android:orientation="vertical"
@@ -16,8 +16,9 @@
         <!-- Título -->
         <TextView
             android:text="Registo"
-            android:textSize="26sp"
+            android:textSize="50sp"
             android:textStyle="bold"
+            android:fontFamily="@font/tangerine_bold"
             android:textColor="#333333"
             android:gravity="center"
             android:layout_width="match_parent"
@@ -38,6 +39,8 @@
                 android:id="@+id/usernameEditText"
                 android:inputType="textPersonName"
                 android:textColor="@color/black"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="30sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -89,7 +92,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            android:background="@drawable/bg_button_purple"
+            android:background="@drawable/bg_vintage_button"
             android:textColor="@android:color/white"
             app:cornerRadius="12dp"
             android:elevation="4dp"/>

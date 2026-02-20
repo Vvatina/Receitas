@@ -1,7 +1,9 @@
 package com.example.receitas;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,9 +24,10 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.example.receitas.model.Recipe;
-import com.example.receitas.model.Step; // Certifique-se que a classe Step existe
+import com.example.receitas.model.Step;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
@@ -32,7 +35,9 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AddRecipeActivity extends AppCompatActivity {
 
@@ -42,12 +47,10 @@ public class AddRecipeActivity extends AppCompatActivity {
     private Button btnSelectMainImage, btnSave, btnCancel, btnAddStep;
     private LinearLayout layoutInstructionsContainer;
 
-    // FIREBASE
     private FirebaseFirestore db;
     private FirebaseAuth auth;
 
-    // VARIÁVEIS DE CONTROLE
-    private String firestoreId = null; // ID da receita se estivermos a editar
+    private String firestoreId = null;
     private boolean isEdit = false;
     private String mainImagePath = null;
     private final List<Step> steps = new ArrayList<>();
@@ -57,11 +60,16 @@ public class AddRecipeActivity extends AppCompatActivity {
 
     private final String[] types = {"Filtro", "Prato Principal", "Sobremesa", "Entrada", "Bebida"};
 
+    private Typeface tangerine; // Fonte vintage
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
         if (getSupportActionBar() != null) getSupportActionBar().hide();
+
+        // Fonte Tangerine
+        tangerine = ResourcesCompat.getFont(this, R.font.tangerine_regular);
 
         // Inicializar Firebase
         db = FirebaseFirestore.getInstance();
@@ -78,12 +86,25 @@ public class AddRecipeActivity extends AppCompatActivity {
         btnAddStep = findViewById(R.id.btnAddStep);
         layoutInstructionsContainer = findViewById(R.id.layoutInstructionsContainer);
 
+        // Aplicar fonte aos elementos principais
+        etName.setTypeface(tangerine, Typeface.BOLD);
+        etIngredients.setTypeface(tangerine, Typeface.BOLD);
+        btnSelectMainImage.setTypeface(tangerine, Typeface.BOLD);
+        btnSave.setTypeface(tangerine, Typeface.BOLD);
+        btnCancel.setTypeface(tangerine, Typeface.BOLD);
+        btnAddStep.setTypeface(tangerine, Typeface.BOLD);
+
+        // --- APLICAR ESTILO PADRONIZADO (Cor #BAB095) ---
+        estilizarBotao(btnSelectMainImage);
+        estilizarBotao(btnSave);
+        estilizarBotao(btnCancel);
+        estilizarBotao(btnAddStep);
+
         setupSpinner();
 
-        // Verifica se é edição
         checkEditMode();
 
-        // Se for nova receita, adiciona o primeiro passo vazio
+        // Adiciona primeiro passo vazio se for nova receita
         if (!isEdit && steps.isEmpty()) {
             addStepFieldToUI(null, null);
         }
@@ -92,26 +113,54 @@ public class AddRecipeActivity extends AppCompatActivity {
         btnSelectMainImage.setOnClickListener(v -> pickImage(PICK_IMAGE_MAIN, -1));
         btnAddStep.setOnClickListener(v -> addStepFieldToUI(null, null));
         btnSave.setOnClickListener(v -> saveRecipe());
+
         btnCancel.setOnClickListener(v -> finish());
     }
 
+    /**
+     * Método centralizado para garantir que todos os botões tenham a cor #BAB095
+     * e bordas arredondadas.
+     */
+    private void estilizarBotao(Button btn) {
+        // IMPORTANTE: Remove a cor de "tint" padrão do Android
+        btn.setBackgroundTintList(null);
+
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+
+        // Define a cor solicitada: #BAB095
+        drawable.setColor(Color.parseColor("#BAB095"));
+
+        // Define bordas arredondadas
+        drawable.setCornerRadius(14f);
+
+        btn.setBackground(drawable);
+        btn.setTextColor(Color.WHITE); // Texto branco para contraste
+        btn.setAllCaps(false); // Mantém o estilo da fonte
+        btn.setTextSize(20f);
+    }
+
     private void setupSpinner() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, types) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types) {
             @Override public boolean isEnabled(int position) { return position != 0; }
             @Override
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = (TextView) view;
+                tv.setTypeface(tangerine, Typeface.BOLD);
+                tv.setTextSize(25f);
+                tv.setBackgroundColor(Color.parseColor("#FDF5E6"));
                 tv.setTextColor(position == 0 ? Color.parseColor("#888888") : Color.BLACK);
-                return view;
+                return tv;
             }
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView tv = (TextView) view;
+                tv.setTypeface(tangerine, Typeface.NORMAL);
+                tv.setTextSize(25f);
                 tv.setTextColor(position == 0 ? Color.parseColor("#888888") : Color.BLACK);
-                return view;
+                return tv;
             }
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -120,7 +169,6 @@ public class AddRecipeActivity extends AppCompatActivity {
     }
 
     private void checkEditMode() {
-        // Agora recebemos um ID String do Firestore
         if (getIntent().hasExtra("firestore_id")) {
             firestoreId = getIntent().getStringExtra("firestore_id");
             isEdit = true;
@@ -133,9 +181,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         db.collection("recipes").document(id).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Recipe recipe = documentSnapshot.toObject(Recipe.class);
-                    if (recipe != null) {
-                        populateUI(recipe);
-                    }
+                    if (recipe != null) populateUI(recipe);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Erro ao carregar dados.", Toast.LENGTH_SHORT).show();
@@ -149,15 +195,10 @@ public class AddRecipeActivity extends AppCompatActivity {
 
         mainImagePath = recipe.getMainImageUri();
         if (mainImagePath != null) {
-            try {
-                imgMainRecipe.setImageURI(Uri.parse(mainImagePath));
-            } catch (Exception e) {
-                // Imagem pode não carregar se for de outro dispositivo (pois é URI local)
-                Log.e("ImgLoad", "Erro imagem local");
-            }
+            try { imgMainRecipe.setImageURI(Uri.parse(mainImagePath)); }
+            catch (Exception e) { Log.e("ImgLoad", "Erro imagem local"); }
         }
 
-        // Carregar Passos
         if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
             try {
                 Gson gson = new Gson();
@@ -165,7 +206,7 @@ public class AddRecipeActivity extends AppCompatActivity {
                 List<Step> loadedSteps = gson.fromJson(recipe.getInstructions(), stepListType);
 
                 steps.clear();
-                layoutInstructionsContainer.removeAllViews(); // Limpa views antigas
+                layoutInstructionsContainer.removeAllViews();
 
                 for (Step step : loadedSteps) {
                     addStepFieldToUI(step.getInstructionText(), step.getImageUri());
@@ -175,7 +216,6 @@ public class AddRecipeActivity extends AppCompatActivity {
             }
         }
 
-        // Setar Spinner
         if (recipe.getType() != null) {
             ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerType.getAdapter();
             int position = adapter.getPosition(recipe.getType());
@@ -189,7 +229,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         intent.setType("image/*");
 
         if (requestCode == PICK_IMAGE_STEP) {
-            // Usamos o requestCode base + index para saber qual passo chamou
             startActivityForResult(intent, PICK_IMAGE_STEP + stepIndex);
         } else {
             startActivityForResult(intent, requestCode);
@@ -204,7 +243,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         Uri selectedImage = data.getData();
         String imagePath = selectedImage.toString();
 
-        // Permissão persistente para ler a imagem depois (apenas localmente)
         try {
             getContentResolver().takePersistableUriPermission(selectedImage, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } catch (SecurityException e) {
@@ -216,18 +254,12 @@ public class AddRecipeActivity extends AppCompatActivity {
             imgMainRecipe.setImageURI(selectedImage);
         } else if (requestCode >= PICK_IMAGE_STEP) {
             int stepIndex = requestCode - PICK_IMAGE_STEP;
-
-            // Atualiza o objeto na lista
             if (stepIndex >= 0 && stepIndex < steps.size()) {
                 Step stepToUpdate = steps.get(stepIndex);
                 stepToUpdate.setImageUri(imagePath);
 
-                // Atualiza a visualização na tela
                 LinearLayout stepLayout = (LinearLayout) layoutInstructionsContainer.getChildAt(stepIndex);
                 if (stepLayout != null) {
-                    // O layout interno tem hierarquia, precisamos achar a imagem pela Tag
-                    // A tag foi definida no método addStepFieldToUI como "imgStep_" + index
-                    // Nota: O método findViewWithTag procura em todos os filhos
                     ImageView imgStep = stepLayout.findViewWithTag("imgStep_" + stepIndex);
                     if (imgStep != null) {
                         imgStep.setImageURI(selectedImage);
@@ -239,118 +271,89 @@ public class AddRecipeActivity extends AppCompatActivity {
     }
 
     private void addStepFieldToUI(String instructionText, String imageUri) {
-        final int stepIndex = steps.size(); // O índice será o tamanho atual antes de adicionar
-
-        // Cria o objeto Step se não vier preenchido
+        final int stepIndex = steps.size();
         Step newStep = new Step(instructionText, imageUri);
-        // Só adiciona na lista se não estivermos a repopular a UI (evita duplicação no loop do populateUI)
-        // Mas como limpamos a lista no populateUI, podemos adicionar sempre aqui.
-        // CUIDADO: Se chamarmos isso no clique do botão, o step é novo.
-        // Se chamarmos no populateUI, o step já existe.
 
-        // Lógica simplificada: Se instructionText for null, é um novo passo via botão.
-        // Se não for null, estamos carregando.
-        if (instructionText == null && imageUri == null) {
-            steps.add(newStep);
-        } else {
-            // Se estamos carregando, o objeto já deveria estar na lista?
-            // Não, no loop do populateUI nós limpamos a lista 'steps' e vamos adicionando de volta.
-            // Então:
-            if (!steps.contains(newStep)) {
-                steps.add(newStep);
-            }
-        }
+        if (instructionText == null && imageUri == null) steps.add(newStep);
+        else if (!steps.contains(newStep)) steps.add(newStep);
 
         LinearLayout stepLayout = new LinearLayout(this);
         stepLayout.setOrientation(LinearLayout.VERTICAL);
-        stepLayout.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        stepLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         stepLayout.setPadding(0, 8, 0, 8);
 
-        // Linha separadora
         View divider = new View(this);
         divider.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
         divider.setBackgroundColor(Color.parseColor("#E0E0E0"));
         stepLayout.addView(divider);
 
-        // Título Passo
         TextView stepNumber = new TextView(this);
         stepNumber.setText("Passo " + (stepIndex + 1));
-        stepNumber.setTextSize(18);
+        stepNumber.setTextSize(30f);
         stepNumber.setTextColor(Color.parseColor("#333333"));
-        stepNumber.setTypeface(null, android.graphics.Typeface.BOLD);
+        stepNumber.setTypeface(tangerine, Typeface.BOLD);
         stepNumber.setGravity(Gravity.CENTER_HORIZONTAL);
         stepNumber.setPadding(0, 16, 0, 8);
         stepLayout.addView(stepNumber);
 
-        // EditText instrução
         EditText etStep = new EditText(this);
         etStep.setHint("Instrução do Passo " + (stepIndex + 1));
         etStep.setText(instructionText != null ? instructionText : "");
-        etStep.setBackgroundResource(R.drawable.bg_edittext); // Certifique-se de ter este drawable ou remova
+        etStep.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F6E8D8")));
+        etStep.setTextSize(16);
+        etStep.setBackgroundResource(R.drawable.bg_edittext);
         etStep.setPadding(24, 24, 24, 24);
         etStep.setTextColor(Color.parseColor("#000000"));
-        etStep.setHintTextColor(Color.parseColor("#888888"));
+        etStep.setHintTextColor(Color.parseColor("#4E342E"));
         etStep.setMinLines(3);
         etStep.setGravity(Gravity.TOP);
-        etStep.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        etStep.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        etStep.setTypeface(tangerine, Typeface.NORMAL);
+        etStep.setTextSize(25f);
 
         etStep.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {
-                // Atualiza o texto na lista em memória
-                if (stepIndex < steps.size()) {
-                    steps.get(stepIndex).setInstructionText(s.toString());
-                }
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (stepIndex < steps.size()) steps.get(stepIndex).setInstructionText(s.toString());
             }
         });
         stepLayout.addView(etStep);
 
-        // Container Imagem + Botão
         LinearLayout imageControlLayout = new LinearLayout(this);
         imageControlLayout.setOrientation(LinearLayout.HORIZONTAL);
-        imageControlLayout.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        imageControlLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         imageControlLayout.setPadding(0, 8, 0, 8);
 
-        // ImageView
         ImageView imgStep = new ImageView(this);
-        imgStep.setTag("imgStep_" + stepIndex); // Tag para encontrar depois
+        imgStep.setTag("imgStep_" + stepIndex);
         LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(150, 150);
         imgParams.setMargins(0, 0, 8, 0);
         imgStep.setLayoutParams(imgParams);
         imgStep.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imgStep.setBackgroundColor(Color.parseColor("#EEEEEE"));
-
-        if (imageUri != null) {
-            imgStep.setImageURI(Uri.parse(imageUri));
-            imgStep.clearColorFilter();
-        } else {
-            imgStep.setImageResource(android.R.drawable.ic_menu_gallery);
-            imgStep.setColorFilter(Color.parseColor("#888888"));
-        }
+        if (imageUri != null) { imgStep.setImageURI(Uri.parse(imageUri)); imgStep.clearColorFilter(); }
+        else { imgStep.setImageResource(android.R.drawable.ic_menu_gallery); imgStep.setColorFilter(Color.parseColor("#888888")); }
         imageControlLayout.addView(imgStep);
 
-        // Botão Selecionar Imagem
         Button btnSelectImage = new Button(this);
         btnSelectImage.setText("Selecionar Foto");
-        btnSelectImage.setTextColor(Color.WHITE);
-        btnSelectImage.setAllCaps(false);
-        btnSelectImage.setTextSize(14f);
+        btnSelectImage.setTextSize(20f);
+        btnSelectImage.setTypeface(tangerine, Typeface.BOLD);
 
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setColor(Color.parseColor("#6A1B9A"));
-        drawable.setCornerRadius(16f);
-        btnSelectImage.setBackground(drawable);
-
+        // Configura ícone
         btnSelectImage.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_gallery, 0, 0, 0);
         btnSelectImage.setCompoundDrawablePadding(8);
 
         LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         btnSelectImage.setLayoutParams(btnParams);
+
+        // APLICA O ESTILO com a nova cor #BAB095
+        estilizarBotao(btnSelectImage);
+
         btnSelectImage.setOnClickListener(v -> pickImage(PICK_IMAGE_STEP, stepIndex));
+
         imageControlLayout.addView(btnSelectImage);
 
         stepLayout.addView(imageControlLayout);
@@ -367,11 +370,9 @@ public class AddRecipeActivity extends AppCompatActivity {
             return;
         }
 
-        // Serializa passos para JSON
         Gson gson = new Gson();
         String stepsJson = gson.toJson(steps);
 
-        // Prepara objeto Recipe
         Recipe recipeToSave = new Recipe();
         recipeToSave.setName(name);
         recipeToSave.setIngredients(ingredients);
@@ -379,29 +380,41 @@ public class AddRecipeActivity extends AppCompatActivity {
         recipeToSave.setType(type);
         recipeToSave.setMainImageUri(mainImagePath);
 
-        // Define o Dono (Importante para o Firebase)
-        if (auth.getCurrentUser() != null) {
-            recipeToSave.setOwnerId(auth.getCurrentUser().getUid());
-        }
+        String currentUserId = (auth.getCurrentUser() != null) ? auth.getCurrentUser().getUid() : null;
 
-        // SALVA NO FIREBASE
-        btnSave.setEnabled(false); // Evita duplo clique
+        btnSave.setEnabled(false);
         btnSave.setText("A guardar...");
 
         if (isEdit && firestoreId != null) {
-            // ATUALIZAÇÃO
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("name", name);
+            updates.put("ingredients", ingredients);
+            updates.put("instructions", stepsJson);
+            updates.put("type", type);
+            updates.put("mainImageUri", mainImagePath);
+
             db.collection("recipes").document(firestoreId)
-                    .set(recipeToSave) // .set() sobrescreve o documento
+                    .update(updates)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, "Receita atualizada!", Toast.LENGTH_SHORT).show();
                         finish();
                     })
                     .addOnFailureListener(e -> {
                         btnSave.setEnabled(true);
+                        btnSave.setText("Salvar");
                         Toast.makeText(this, "Erro ao atualizar.", Toast.LENGTH_SHORT).show();
                     });
         } else {
-            // NOVA RECEITA
+            if (currentUserId != null) {
+                recipeToSave.setOwnerId(currentUserId);
+                List<String> shares = new ArrayList<>();
+                shares.add(currentUserId);
+                recipeToSave.setSharedWith(shares);
+                Map<String, Boolean> perms = new HashMap<>();
+                perms.put(currentUserId, true);
+                recipeToSave.setPermissions(perms);
+            }
+
             db.collection("recipes")
                     .add(recipeToSave)
                     .addOnSuccessListener(documentReference -> {
@@ -410,6 +423,7 @@ public class AddRecipeActivity extends AppCompatActivity {
                     })
                     .addOnFailureListener(e -> {
                         btnSave.setEnabled(true);
+                        btnSave.setText("Salvar");
                         Toast.makeText(this, "Erro ao criar.", Toast.LENGTH_SHORT).show();
                     });
         }

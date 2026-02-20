@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@drawable/fundo_tela">
 
     <LinearLayout
         android:orientation="vertical"
@@ -15,9 +15,10 @@
 
         <!-- Título -->
         <TextView
-            android:text="Bem-vindo"
-            android:textSize="28sp"
+            android:text="Bem-vindo (a)"
+            android:textSize="50sp"
             android:textStyle="bold"
+            android:fontFamily="@font/tangerine_bold"
             android:textColor="#333333"
             android:gravity="center"
             android:layout_width="match_parent"
@@ -31,7 +32,7 @@
             android:hint="Email"
             android:textColorHint="@color/black"
             android:textColor="@color/black"
-            app:boxStrokeColor="@color/purple_700"
+            app:boxStrokeColor="@color/ink_color"
             app:boxBackgroundMode="filled"
             app:boxBackgroundColor="#FFFFFF">
 
@@ -39,6 +40,8 @@
                 android:id="@+id/emailEditText"
                 android:inputType="textEmailAddress"
                 android:textColor="@color/black"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="30sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -51,28 +54,32 @@
             android:textColorHint="@color/black"
             android:textColor="@color/black"
             app:passwordToggleEnabled="true"
-            app:boxStrokeColor="@color/purple_700"
+            app:boxStrokeColor="@color/ink_color"
             app:boxBackgroundMode="filled"
             app:boxBackgroundColor="#FFFFFF"
             android:layout_marginTop="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/passwordEditText"
-                android:inputType="textPassword"
-                android:textColor="@color/black"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="30sp"
+                android:inputType="textPassword"
+                android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Botão Login -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/loginButton"
             android:text="Login"
+            android:fontFamily="@font/tangerine_regular"
+            android:textSize="30sp"
             android:textAllCaps="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            android:background="@drawable/bg_button_purple"
+            android:background="@drawable/bg_vintage_button"
             android:textColor="@android:color/white"
             app:cornerRadius="12dp"
             android:elevation="4dp"/>
@@ -81,9 +88,10 @@
         <TextView
             android:id="@+id/registerTextView"
             android:text="Não tem conta? Faça registo"
-            android:textColor="@color/purple_700"
+            android:fontFamily="@font/tangerine_regular"
+            android:textSize="27sp"
+            android:textColor="@color/ink_color"
             android:textAlignment="center"
-            android:textSize="14sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"/>

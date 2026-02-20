@@ -1,122 +1,212 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_form_card"
-    android:padding="20dp">
-
-    <LinearLayout
+    android:background="@drawable/papel_fundo"
+    android:fillViewport="true">
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_form_card"
-        android:padding="24dp"
-        android:elevation="4dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Adicionar Receita"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#4B0082"
-            android:gravity="center"
-            android:layout_marginBottom="20dp" />
-
-        <ImageView
-            android:id="@+id/imgMainRecipe"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"
-            android:background="#EEEEEE"
-            android:contentDescription="Foto principal da receita" />
-
-        <Button
-            android:id="@+id/btnSelectMainImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Selecionar Foto da Receita"
-            android:background="@drawable/bg_button_gray"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="16dp" />
-
-        <EditText
-            android:id="@+id/etName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Nome da Receita"
-            android:background="@drawable/bg_edittext"
-            android:padding="12dp"
-            android:textColor="#000000"
-            android:textColorHint="#888888"
-            android:layout_marginBottom="16dp" />
-
-        <Spinner
-            android:id="@+id/spinnerType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_edittext"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp"
-            android:popupBackground="@drawable/spinner_dropdown_bg" />
-
-        <EditText
-            android:id="@+id/etIngredients"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ingredientes"
-            android:background="@drawable/bg_edittext"
-            android:padding="12dp"
-            android:minLines="4"
-            android:gravity="top"
-            android:textColor="#000000"
-            android:textColorHint="#888888"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Instruções (Passo a Passo):"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#4B0082"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"/>
-
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp">
         <LinearLayout
-            android:id="@+id/layoutInstructionsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="16dp"/>
+            android:background="@drawable/papel_fundo"
+            android:padding="24dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nova Receita"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tangerine_regular"
+                android:textColor="@color/ink_color"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/btnAddStep"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="+ Adicionar Passo"
-            android:background="@drawable/bg_button_gray"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="24dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tangerine_regular"
+                android:textColor="@color/ink_color"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Salvar Receita"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_button_purple"
-            android:layout_marginBottom="12dp" />
+            <View
+                android:layout_width="100dp"
+                android:layout_height="2dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/accent_gold"
+                android:layout_marginBottom="24dp"/>
 
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cancelar"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_button_gray" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="#FFFFFF">
 
-    </LinearLayout>
+                <ImageView
+                    android:id="@+id/imgMainRecipe"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:backgroundTint="#C9C5B1"
+                    android:scaleType="centerCrop"
+                    android:background="#EEE"
+                    android:contentDescription="Foto da receita" />
+            </androidx.cardview.widget.CardView>
+
+            <Button
+                android:id="@+id/btnSelectMainImage"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:text="Adicionar Foto"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/btn_text"
+                android:background="@drawable/bg_vintage_button"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:layout_marginBottom="24dp" />
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nome da receita"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_input_line"
+                android:padding="8dp"
+                android:textColor="@color/ink_color"
+                android:textColorHint="#9D8883"
+                android:layout_marginBottom="20dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Categoria:"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="24sp"
+                android:textColor="@color/ink_color"/>
+
+            <Spinner
+                android:id="@+id/spinnerType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_line"
+                android:padding="12dp"
+                android:layout_marginBottom="20dp" />
+
+            <EditText
+                android:id="@+id/etIngredients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ingredientes necessários..."
+                android:fontFamily="@font/tangerine_regular"
+                android:textStyle="bold"
+                android:textSize="28sp"
+                android:background="@drawable/bg_input_line"
+                android:padding="8dp"
+                android:minLines="3"
+                android:gravity="top"
+                android:textColor="@color/ink_color"
+                android:textColorHint="#9D8883"
+                android:layout_marginBottom="24dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/line_color"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Modo de Preparo"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink_color"
+                    android:layout_marginHorizontal="12dp"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/line_color"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutInstructionsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp"/>
+
+            <Button
+                android:id="@+id/btnAddStep"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+ Adicionar Passo"
+                android:fontFamily="@font/tangerine_regular"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_vintage_button"
+                android:textColor="@color/btn_text"
+                android:layout_marginBottom="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cancelar"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:textSize="22sp"
+                    android:textAllCaps="false"
+                    android:textColor="#8D6E63"
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnSave"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Guardar"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:textColor="@color/btn_text"
+                    android:background="@drawable/bg_vintage_button"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </ScrollView>

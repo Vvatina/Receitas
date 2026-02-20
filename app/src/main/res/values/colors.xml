@@ -13,6 +13,30 @@
         <color name="text_primary_dark">#FFFFFF</color>
         <color name="text_secondary_dark">#CCCCCC</color>
         <color name="hint_dark">#888888</color>
-        <color name="button_purple_dark">#9A4DFF</color>
+        <color name="button_gray">#C1A87D</color>       <!-- Fundo do botão -->
         <color name="button_gray_dark">#555555</color>
+
+        <color name="paper_light">#FFF8ED</color>       <!-- Fundo principal muito claro -->
+        <color name="paper_medium">#FDF1E0</color>      <!-- Fundo intermediário / cartões -->
+        <color name="paper_dark">#F6E8D8</color>        <!-- Fundo sutil em elementos secundários -->
+
+        <!-- Textos -->
+        <color name="text_primary">#5B3A29</color>      <!-- Marrom escuro para títulos -->
+        <color name="text_secondary">#7D5A3C</color>    <!-- Marrom médio para subtítulos -->
+        <color name="hint">#A78F6B</color>              <!-- Marrom claro / dicas / hint -->
+
+        <!-- Botões e destaques -->
+        <color name="button_main">#C1A87D</color>       <!-- Bege / marrom claro minimalista -->
+        <color name="button_text_light">#FFFFFF</color> <!-- Texto de botões escuros -->
+        <color name="button_text_dark">#5B3A29</color>  <!-- Texto de botões claros -->
+
+        <!-- Cores adicionais para bordas, separadores, etc -->
+        <color name="divider">#E6D4B8</color>           <!-- Linha separadora -->
+        <color name="accent">#BF6E5F</color>
+        <color name="paper_cream">#FDF5E6</color>
+        <color name="ink_color">#4E342E</color>
+        <color name="line_color">#D7CCC8</color>
+        <color name="wood_bg">#5D4037</color>
+        <color name="accent_gold">#C1A87D</color>
+        <color name="btn_text">#FFFFFF</color>
 </resources>

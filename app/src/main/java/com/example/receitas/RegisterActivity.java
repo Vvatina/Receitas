@@ -91,19 +91,24 @@ public class RegisterActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sucesso na Autenticação
                             FirebaseUser user = mAuth.getCurrentUser();
-                            saveUserToFirestore(user, username);
-                        } else {
-                            // Falha
-                            registerButton.setEnabled(true);
-                            registerButton.setText("CADASTRAR");
+                            String userId = user.getUid();
+                            String email = user.getEmail();
 
-                            String error = "Erro ao cadastrar.";
-                            if (task.getException() != null) {
-                                error = task.getException().getMessage();
-                            }
-                            Toast.makeText(RegisterActivity.this, error, Toast.LENGTH_LONG).show();
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("uid", userId);
+                            userData.put("email", email);
+
+                            FirebaseFirestore.getInstance().collection("users")
+                                    .document(userId)
+                                    .set(userData)
+                                    .addOnSuccessListener(aVoid -> {
+                                        // Só muda de tela depois de salvar no banco
+                                        startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e -> Toast.makeText(RegisterActivity.this, "Erro ao salvar dados.", Toast.LENGTH_SHORT).show());
+                            // ----------------------------------------------
                         }
                     }
                 });
