@@ -12,9 +12,12 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager; // IMPORTANTE: Para manter o ecrã ligado
 import android.widget.Button;
+import android.widget.CompoundButton; // IMPORTANTE: Para o Switch
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch; // IMPORTANTE: Para o Switch
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,13 +26,13 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.example.receitas.model.Recipe;
-import com.example.receitas.model.Step; // Certifique-se de ter este import se usar a classe Step, ou use JSON direto
+import com.example.receitas.model.Step;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-// JSON Imports (caso não use Gson para tudo)
+// JSON Imports
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -64,6 +67,9 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private LinearLayout layoutStepsContainer;
     private Button btnExportPDF;
 
+    // NOVO: Declarar o interrutor do Modo de Cozinha
+    private Switch switchModoCozinha;
+
     // FIREBASE
     private FirebaseFirestore db;
     private String firestoreId;
@@ -96,6 +102,9 @@ public class ViewRecipeActivity extends AppCompatActivity {
         layoutStepsContainer = findViewById(R.id.layoutStepsContainer);
         btnExportPDF = findViewById(R.id.btnExportPDF);
 
+        // NOVO: Inicializar o interrutor do Modo de Cozinha
+        switchModoCozinha = findViewById(R.id.switchModoCozinha);
+
         // 3. Aplicar Estilo Vintage aos elementos fixos
         if (tangerine != null) {
             tvName.setTypeface(tangerine, Typeface.BOLD);
@@ -104,11 +113,30 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
             // O botão também recebe a fonte
             btnExportPDF.setTypeface(tangerine, Typeface.BOLD);
-            btnExportPDF.setTextSize(24f); // Aumenta porque a Tangerine é pequena
+            btnExportPDF.setTextSize(24f);
+
+            // NOVO: Aplicar a fonte vintage ao interrutor
+            switchModoCozinha.setTypeface(tangerine, Typeface.BOLD);
         }
 
-        // 4. Aplicar Estilo de Botão (Bege) - Mesma lógica da AddRecipeActivity
+        // 4. Aplicar Estilo de Botão (Bege)
         estilizarBotao(btnExportPDF);
+
+        // ==========================================
+        // NOVO: LÓGICA DO MODO DE COZINHA
+        // ==========================================
+        switchModoCozinha.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Adiciona a "flag" para manter o ecrã ligado
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                Toast.makeText(ViewRecipeActivity.this, "Modo de Cozinha Ativado \uD83C\uDF73", Toast.LENGTH_SHORT).show();
+            } else {
+                // Remove a "flag" para o ecrã poder desligar-se
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                Toast.makeText(ViewRecipeActivity.this, "Modo de Cozinha Desativado", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // ==========================================
 
         // Inicializa Firebase
         db = FirebaseFirestore.getInstance();
@@ -131,10 +159,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Copiado da AddRecipeActivity para manter consistência visual.
-     * Define o fundo bege arredondado.
-     */
     private void estilizarBotao(Button btn) {
         btn.setBackgroundTintList(null);
 
@@ -179,31 +203,25 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     private void populateUI(Recipe recipe) {
-        // Título e Tipo
         tvName.setText(recipe.getName());
         tvType.setText(recipe.getType());
-
-        // Ingredientes
         tvIngredients.setText(recipe.getIngredients());
 
-        // Imagem Principal
         if (recipe.getMainImageUri() != null && !recipe.getMainImageUri().isEmpty()) {
             try {
                 imgMainRecipe.setImageURI(Uri.parse(recipe.getMainImageUri()));
                 imgMainRecipe.setVisibility(View.VISIBLE);
             } catch (Exception e) {
-                imgMainRecipe.setVisibility(View.GONE); // Falha silenciosa se img local não existir
+                imgMainRecipe.setVisibility(View.GONE);
             }
         } else {
             imgMainRecipe.setVisibility(View.GONE);
         }
 
-        // Preencher Passos Dinamicamente com Estilo Vintage
         layoutStepsContainer.removeAllViews();
 
         if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
             try {
-                // Usando Gson para converter JSON em Lista de Objetos Step (mais seguro)
                 Gson gson = new Gson();
                 Type stepListType = new TypeToken<ArrayList<Step>>(){}.getType();
                 List<Step> stepList = gson.fromJson(recipe.getInstructions(), stepListType);
@@ -220,35 +238,31 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     private void addStepToLayout(int number, String text, String imageUri) {
-        // Container do Passo
         LinearLayout stepLayout = new LinearLayout(this);
         stepLayout.setOrientation(LinearLayout.VERTICAL);
         stepLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        stepLayout.setPadding(0, 0, 0, 32); // Margem inferior
+        stepLayout.setPadding(0, 0, 0, 32);
 
-        // Título do Passo (Ex: "Passo 1")
         TextView tvTitle = new TextView(this);
         tvTitle.setText("Passo " + number);
-        tvTitle.setTextSize(32f); // Fonte grande para Tangerine
+        tvTitle.setTextSize(32f);
         tvTitle.setTextColor(Color.parseColor("#4E342E"));
         tvTitle.setTypeface(tangerine, Typeface.BOLD);
         tvTitle.setGravity(Gravity.START);
         stepLayout.addView(tvTitle);
 
-        // Texto da Instrução
         TextView tvText = new TextView(this);
         tvText.setText(text);
-        tvText.setTextSize(26f); // Fonte média para leitura
-        tvText.setTextColor(Color.parseColor("#3E2723")); // Marrom escuro
+        tvText.setTextSize(26f);
+        tvText.setTextColor(Color.parseColor("#3E2723"));
         tvText.setTypeface(tangerine, Typeface.NORMAL);
         tvText.setPadding(8, 4, 8, 16);
         stepLayout.addView(tvText);
 
-        // Imagem do Passo (se houver) dentro de um Card para efeito foto
         if (imageUri != null && !imageUri.isEmpty()) {
             CardView imgCard = new CardView(this);
             LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, 500); // Altura fixa para imagem
+                    ViewGroup.LayoutParams.MATCH_PARENT, 500);
             cardParams.setMargins(8, 8, 8, 8);
             imgCard.setLayoutParams(cardParams);
             imgCard.setRadius(12f);
@@ -264,25 +278,20 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 imgCard.addView(ivStep);
                 stepLayout.addView(imgCard);
             } catch (Exception e) {
-                // Se a imagem não carregar, não adiciona o card
             }
         }
 
-        // Divisor Decorativo
         View divider = new View(this);
         LinearLayout.LayoutParams divParams = new LinearLayout.LayoutParams(200, 2);
         divParams.gravity = Gravity.CENTER_HORIZONTAL;
         divParams.setMargins(0, 16, 0, 0);
         divider.setLayoutParams(divParams);
-        divider.setBackgroundColor(Color.parseColor("#BAB095")); // Cor bege escuro
+        divider.setBackgroundColor(Color.parseColor("#BAB095"));
         stepLayout.addView(divider);
 
         layoutStepsContainer.addView(stepLayout);
     }
 
-    // =====================================
-    // EXPORTAR PDF (Mantido, apenas ajustes de segurança)
-    // =====================================
     private void exportRecipeToDownloads(Recipe recipe) {
         try {
             String fileName = "Receita_" + recipe.getName().replaceAll("\\W+", "_") + ".pdf";
@@ -314,7 +323,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
             DeviceRgb colorDeepPurple = new DeviceRgb(74, 20, 140);
             DeviceRgb colorText = new DeviceRgb(50, 50, 50);
 
-            // Título
             document.add(new Paragraph("\n"));
             document.add(new Paragraph(recipe.getName().toUpperCase())
                     .setFontSize(24f).setBold().setFontColor(colorDeepPurple).setTextAlignment(TextAlignment.CENTER));
@@ -323,7 +331,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
                     .setFontSize(14f).setItalic().setFontColor(ColorConstants.GRAY)
                     .setTextAlignment(TextAlignment.CENTER).setMarginBottom(10f));
 
-            // Tenta adicionar imagem principal ao PDF
             if (recipe.getMainImageUri() != null) {
                 addImageToPDFStyled(recipe.getMainImageUri(), document);
             }
@@ -333,7 +340,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
             document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
-            // Ingredientes
             document.add(new Paragraph("INGREDIENTES")
                     .setFontSize(16f).setBold().setFontColor(colorDeepPurple).setUnderline());
 
@@ -345,7 +351,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
             document.add(new Paragraph("\nPREPARO")
                     .setFontSize(16f).setBold().setFontColor(colorDeepPurple).setUnderline().setMarginTop(20f));
 
-            // Passos no PDF
             if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
                 Gson gson = new Gson();
                 Type stepListType = new TypeToken<ArrayList<Step>>(){}.getType();
@@ -366,12 +371,10 @@ public class ViewRecipeActivity extends AppCompatActivity {
             document.close();
             Toast.makeText(this, "PDF salvo em Downloads!", Toast.LENGTH_LONG).show();
 
-            // Abrir PDF
             if (pdfUri != null) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setDataAndType(pdfUri, "application/pdf");
                 intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                // Verifica se há app para abrir PDF
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                 }
@@ -383,11 +386,9 @@ public class ViewRecipeActivity extends AppCompatActivity {
         }
     }
 
-    // Helper para adicionar imagem ao PDF (Simplificado)
     private void addImageToPDFStyled(String uriString, Document document) {
         try {
             Uri uri = Uri.parse(uriString);
-            // Nota: Converter URI para ImageData requer ler o InputStream
             java.io.InputStream is = getContentResolver().openInputStream(uri);
             if (is != null) {
                 byte[] bytes = new byte[is.available()];
@@ -401,7 +402,6 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 document.add(img);
             }
         } catch (Exception e) {
-            // Ignora erro de imagem no PDF para não travar o processo
         }
     }
 }
