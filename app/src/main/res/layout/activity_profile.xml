@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/papel_fundo"
+    android:fillViewport="true">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/papel_fundo"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="O Meu Perfil"
+                android:textSize="52sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/tangerine_regular"
+                android:textColor="#4E342E"
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+            <View
+                android:layout_width="150dp"
+                android:layout_height="2dp"
+                android:layout_gravity="center_horizontal"
+                android:background="#BAB095"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="A tua foto:"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#8D6E63"
+                android:gravity="center" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="8dp"  app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <ImageView
+                    android:id="@+id/imgProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:adjustViewBounds="true" android:padding="0dp"
+                    android:src="@android:drawable/ic_menu_camera" />
+            </androidx.cardview.widget.CardView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nome de Chef (Username):"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#8D6E63" />
+
+            <EditText
+                android:id="@+id/editUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="O teu nome"
+                android:textColor="@color/ink_color"
+                android:textColorHint="@color/ink_color"
+                android:inputType="textPersonName"
+                android:padding="12dp"
+                android:background="@drawable/bg_input_line"
+                android:elevation="2dp"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="A minha especialidade na cozinha:"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#8D6E63" />
+
+            <EditText
+                android:id="@+id/editBio"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:hint="Conta-nos um pouco sobre ti..."
+                android:textColor="@color/ink_color"
+                android:textColorHint="@color/ink_color"
+                android:inputType="textMultiLine"
+                android:gravity="top|start"
+                android:padding="12dp"
+                android:background="@drawable/bg_input_line"
+                android:elevation="2dp"
+                android:layout_marginBottom="32dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="O meu Email:"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#8D6E63" />
+
+            <EditText
+                android:id="@+id/editEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:padding="12dp"
+                android:background="@drawable/bg_input_line"
+                android:elevation="2dp"
+                android:textColor="@color/ink_color"
+                android:textColorHint="@color/ink_color"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nova Senha (deixa em branco para manter):"
+                android:fontFamily="@font/tangerine_regular"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#8D6E63"/>
+
+            <EditText
+                android:id="@+id/editPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Escreve apenas se quiseres mudar"
+                android:textColor="@color/ink_color"
+                android:textColorHint="@color/ink_color"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:background="@drawable/bg_input_line"
+                android:elevation="2dp"
+                android:layout_marginBottom="32dp"/>
+
+            <Button
+                android:id="@+id/btnSaveProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Guardar Alterações"
+                android:fontFamily="@font/tangerine_regular"
+                android:background="@drawable/bg_vintage_button"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:elevation="6dp"
+                android:layout_marginBottom="12dp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</ScrollView>

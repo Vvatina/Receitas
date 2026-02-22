@@ -91,24 +91,18 @@ public class RegisterActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            // Sucesso! A conta foi criada no Firebase Auth.
                             FirebaseUser user = mAuth.getCurrentUser();
-                            String userId = user.getUid();
-                            String email = user.getEmail();
 
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("uid", userId);
-                            userData.put("email", email);
+                            // 2. Agora sim, chamamos o teu método perfeito lá de baixo
+                            // e passamos-lhe o user e o username que o utilizador digitou!
+                            saveUserToFirestore(user, username);
 
-                            FirebaseFirestore.getInstance().collection("users")
-                                    .document(userId)
-                                    .set(userData)
-                                    .addOnSuccessListener(aVoid -> {
-                                        // Só muda de tela depois de salvar no banco
-                                        startActivity(new Intent(RegisterActivity.this, MainActivity.class));
-                                        finish();
-                                    })
-                                    .addOnFailureListener(e -> Toast.makeText(RegisterActivity.this, "Erro ao salvar dados.", Toast.LENGTH_SHORT).show());
-                            // ----------------------------------------------
+                        } else {
+                            // Se der erro (ex: password fraca, email já existe)
+                            registerButton.setEnabled(true);
+                            registerButton.setText("CADASTRAR");
+                            Toast.makeText(RegisterActivity.this, "Erro ao criar conta: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
                     }
                 });

@@ -2,17 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home"
-        android:icon="@android:drawable/ic_menu_myplaces"
+        android:icon="@drawable/recipe"
         android:title="Minhas"
         />
 
     <item
         android:id="@+id/nav_shared"
-        android:icon="@android:drawable/ic_menu_share"
+        android:icon="@drawable/share"
         android:title="Partilhadas" />
+
     <item
-        android:id="@+id/nav_sharedd"
-        android:icon="@android:drawable/ic_menu_share"
-        android:title="Partilhadas" />
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/user"
+        android:title="Perfil" />
 
 </menu>

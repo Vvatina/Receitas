@@ -2,7 +2,9 @@ package com.example.receitas;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.InputType;
@@ -224,38 +226,61 @@ public class HomeFragment extends Fragment implements RecipeAdapter.OnRecipeClic
 
     @Override
     public void onShareClick(Recipe recipe) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Partilhar: " + recipe.getName());
+        // 0. Cores da App
+        int corTitulo = Color.parseColor("#4E342E"); // Castanho escuro
+        int corTexto = Color.parseColor("#8D6E63");   // Castanho suave
+        int corLinha = Color.parseColor("#BAB095");   // Bege/Vintage
 
-        // 1. Criar Layout Programaticamente
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+        // Título Personalizado
+        TextView title = new TextView(getContext());
+        title.setText("Partilhar: " + recipe.getName());
+        title.setPadding(50, 40, 50, 10);
+        title.setTextSize(24);
+        title.setTextColor(corTitulo);
+        title.setTypeface(null, Typeface.BOLD);
+        builder.setCustomTitle(title);
+
+        // 1. Layout Principal
         LinearLayout layout = new LinearLayout(getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(50, 40, 50, 10);
+        layout.setPadding(50, 20, 50, 20);
+        layout.setBackgroundColor(Color.parseColor("#FCF9F2")); // Cor de papel clara
 
-        // 2. Campo de Email
+        // 2. Campo de Email (Estilo Linha)
         final EditText inputEmail = new EditText(getContext());
         inputEmail.setHint("Email do destinatário");
+        inputEmail.setHintTextColor(Color.LTGRAY);
+        inputEmail.setTextColor(corTitulo);
         inputEmail.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        // Aplica a linha bege por baixo (semelhante ao teu bg_input_line)
+        inputEmail.getBackground().setColorFilter(corLinha, PorterDuff.Mode.SRC_IN);
         layout.addView(inputEmail);
 
         // 3. Texto de Permissão
         TextView lblPermissao = new TextView(getContext());
         lblPermissao.setText("\nNível de Permissão:");
-        lblPermissao.setPadding(0, 20, 0, 10);
+        lblPermissao.setTextColor(corTexto);
+        lblPermissao.setTextSize(16);
         layout.addView(lblPermissao);
 
-        // 4. Radio Group (Visualizar vs Editar)
-
+        // 4. Radio Group
         final RadioGroup radioGroup = new RadioGroup(getContext());
 
         final RadioButton rbViewer = new RadioButton(getContext());
-        rbViewer.setId(View.generateViewId()); // <--- ADICIONE ISTO (Gera ID único)
+        rbViewer.setId(View.generateViewId());
         rbViewer.setText("Apenas Visualizar");
+        rbViewer.setTextColor(corTitulo);
+        // Mudar cor do círculo do RadioButton
+        rbViewer.setButtonTintList(ColorStateList.valueOf(corTexto));
         rbViewer.setChecked(true);
 
         final RadioButton rbEditor = new RadioButton(getContext());
-        rbEditor.setId(View.generateViewId()); // <--- ADICIONE ISTO (Gera ID único)
+        rbEditor.setId(View.generateViewId());
         rbEditor.setText("Pode Editar");
+        rbEditor.setTextColor(corTitulo);
+        rbEditor.setButtonTintList(ColorStateList.valueOf(corTexto));
 
         radioGroup.addView(rbViewer);
         radioGroup.addView(rbEditor);
@@ -263,17 +288,22 @@ public class HomeFragment extends Fragment implements RecipeAdapter.OnRecipeClic
 
         builder.setView(layout);
 
-        // 5. Ação do Botão Enviar
+        // 5. Botões
         builder.setPositiveButton("Enviar", (dialog, which) -> {
             String email = inputEmail.getText().toString().trim();
-            boolean isEditor = rbEditor.isChecked(); // Verifica qual está marcado
-
+            boolean isEditor = rbEditor.isChecked();
             if (!email.isEmpty()) {
                 shareRecipe(email, recipe, isEditor);
             }
         });
         builder.setNegativeButton("Cancelar", null);
-        builder.show();
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // 6. Colorir os botões "Enviar" e "Cancelar" (Só funciona depois do show())
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(corTitulo);
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(corTexto);
     }
 
     private void shareRecipe(String email, Recipe recipe, boolean isEditor) {
