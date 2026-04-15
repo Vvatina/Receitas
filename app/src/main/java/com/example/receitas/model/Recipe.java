@@ -15,6 +15,9 @@ public class Recipe {
     private String ownerId;     // UID de quem criou
     private String ownerName;   // Nome de quem criou (opcional)
 
+    // NOVO CAMPO: ID da coleção/livro a que pertence (null se for receita solta)
+    private String collectionId;
+
     // -----------------------------------------------------------
     // DADOS DA RECEITA
     // -----------------------------------------------------------
@@ -57,11 +60,7 @@ public class Recipe {
     // LÓGICA DE PERMISSÃO (Helper)
     // -----------------------------------------------------------
 
-    /**
-     * Verifica se o utilizador atual tem permissão de edição.
-     * Retorna TRUE se for o dono OU se tiver permissão de editor no mapa.
-     */
-    @Exclude // @Exclude impede que este método seja interpretado como um campo do banco
+    @Exclude
     public boolean canEdit(String currentUserId) {
         if (currentUserId == null) return false;
 
@@ -73,7 +72,7 @@ public class Recipe {
             return Boolean.TRUE.equals(permissions.get(currentUserId));
         }
 
-        return false; // Se não for dono nem editor, retorna false (apenas leitura)
+        return false;
     }
 
     // -----------------------------------------------------------
@@ -91,6 +90,10 @@ public class Recipe {
 
     public String getOwnerName() { return ownerName; }
     public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+
+    // --- GETTER E SETTER DA COLEÇÃO ---
+    public String getCollectionId() { return collectionId; }
+    public void setCollectionId(String collectionId) { this.collectionId = collectionId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -111,7 +114,6 @@ public class Recipe {
     public void setStepImagesJson(String stepImagesJson) { this.stepImagesJson = stepImagesJson; }
 
     // --- GETTERS SEGUROS PARA LISTAS E MAPAS ---
-    // (Evitam erros se o Firebase retornar nulo)
 
     public List<String> getSharedWith() {
         return sharedWith != null ? sharedWith : new ArrayList<>();
@@ -122,4 +124,5 @@ public class Recipe {
         return permissions != null ? permissions : new HashMap<>();
     }
     public void setPermissions(Map<String, Boolean> permissions) { this.permissions = permissions; }
+
 }

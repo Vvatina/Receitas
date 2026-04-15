@@ -60,7 +60,7 @@ public class AddRecipeActivity extends AppCompatActivity {
 
     private final String[] types = {"Filtro", "Prato Principal", "Sobremesa", "Entrada", "Bebida"};
 
-    private Typeface tangerine; // Fonte vintage
+    private Typeface tangerine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +68,11 @@ public class AddRecipeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_recipe);
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        // Fonte Tangerine
         tangerine = ResourcesCompat.getFont(this, R.font.tangerine_regular);
 
-        // Inicializar Firebase
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-        // Inicializar Views
         etName = findViewById(R.id.etName);
         etIngredients = findViewById(R.id.etIngredients);
         spinnerType = findViewById(R.id.spinnerType);
@@ -86,7 +83,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         btnAddStep = findViewById(R.id.btnAddStep);
         layoutInstructionsContainer = findViewById(R.id.layoutInstructionsContainer);
 
-        // Aplicar fonte aos elementos principais
         etName.setTypeface(tangerine, Typeface.BOLD);
         etIngredients.setTypeface(tangerine, Typeface.BOLD);
         btnSelectMainImage.setTypeface(tangerine, Typeface.BOLD);
@@ -94,49 +90,37 @@ public class AddRecipeActivity extends AppCompatActivity {
         btnCancel.setTypeface(tangerine, Typeface.BOLD);
         btnAddStep.setTypeface(tangerine, Typeface.BOLD);
 
-        // --- APLICAR ESTILO PADRONIZADO (Cor #BAB095) ---
         estilizarBotao(btnSelectMainImage);
         estilizarBotao(btnSave);
         estilizarBotao(btnCancel);
         estilizarBotao(btnAddStep);
 
         setupSpinner();
-
         checkEditMode();
 
-        // Adiciona primeiro passo vazio se for nova receita
         if (!isEdit && steps.isEmpty()) {
             addStepFieldToUI(null, null);
         }
 
-        // Listeners
         btnSelectMainImage.setOnClickListener(v -> pickImage(PICK_IMAGE_MAIN, -1));
         btnAddStep.setOnClickListener(v -> addStepFieldToUI(null, null));
         btnSave.setOnClickListener(v -> saveRecipe());
 
-        btnCancel.setOnClickListener(v -> finish());
+        btnCancel.setOnClickListener(v -> {
+            libertarReceita();
+            finish();
+        });
     }
 
-    /**
-     * Método centralizado para garantir que todos os botões tenham a cor #BAB095
-     * e bordas arredondadas.
-     */
     private void estilizarBotao(Button btn) {
-        // IMPORTANTE: Remove a cor de "tint" padrão do Android
         btn.setBackgroundTintList(null);
-
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
-
-        // Define a cor solicitada: #BAB095
         drawable.setColor(Color.parseColor("#BAB095"));
-
-        // Define bordas arredondadas
         drawable.setCornerRadius(14f);
-
         btn.setBackground(drawable);
-        btn.setTextColor(Color.WHITE); // Texto branco para contraste
-        btn.setAllCaps(false); // Mantém o estilo da fonte
+        btn.setTextColor(Color.WHITE);
+        btn.setAllCaps(false);
         btn.setTextSize(20f);
     }
 
@@ -172,7 +156,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         if (getIntent().hasExtra("firestore_id")) {
             firestoreId = getIntent().getStringExtra("firestore_id");
             isEdit = true;
-            setTitle("Editar Receita");
             loadRecipeData(firestoreId);
         }
     }
@@ -246,7 +229,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         try {
             getContentResolver().takePersistableUriPermission(selectedImage, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } catch (SecurityException e) {
-            Log.e("Permissions", "Falha na permissão persistente: " + e.getMessage());
+            Log.e("Permissions", "Falha na permissão: " + e.getMessage());
         }
 
         if (requestCode == PICK_IMAGE_MAIN) {
@@ -255,8 +238,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         } else if (requestCode >= PICK_IMAGE_STEP) {
             int stepIndex = requestCode - PICK_IMAGE_STEP;
             if (stepIndex >= 0 && stepIndex < steps.size()) {
-                Step stepToUpdate = steps.get(stepIndex);
-                stepToUpdate.setImageUri(imagePath);
+                steps.get(stepIndex).setImageUri(imagePath);
 
                 LinearLayout stepLayout = (LinearLayout) layoutInstructionsContainer.getChildAt(stepIndex);
                 if (stepLayout != null) {
@@ -300,7 +282,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         etStep.setHint("Instrução do Passo " + (stepIndex + 1));
         etStep.setText(instructionText != null ? instructionText : "");
         etStep.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F6E8D8")));
-        etStep.setTextSize(16);
         etStep.setBackgroundResource(R.drawable.bg_edittext);
         etStep.setPadding(24, 24, 24, 24);
         etStep.setTextColor(Color.parseColor("#000000"));
@@ -341,21 +322,16 @@ public class AddRecipeActivity extends AppCompatActivity {
         btnSelectImage.setText("Selecionar Foto");
         btnSelectImage.setTextSize(20f);
         btnSelectImage.setTypeface(tangerine, Typeface.BOLD);
-
-        // Configura ícone
         btnSelectImage.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_gallery, 0, 0, 0);
         btnSelectImage.setCompoundDrawablePadding(8);
 
         LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         btnSelectImage.setLayoutParams(btnParams);
-
-        // APLICA O ESTILO com a nova cor #BAB095
         estilizarBotao(btnSelectImage);
 
         btnSelectImage.setOnClickListener(v -> pickImage(PICK_IMAGE_STEP, stepIndex));
 
         imageControlLayout.addView(btnSelectImage);
-
         stepLayout.addView(imageControlLayout);
         layoutInstructionsContainer.addView(stepLayout);
     }
@@ -380,6 +356,10 @@ public class AddRecipeActivity extends AppCompatActivity {
         recipeToSave.setType(type);
         recipeToSave.setMainImageUri(mainImagePath);
 
+        // LÓGICA DE COLEÇÃO: Importante para aparecer na Home ou no Livro
+        String collectionIdFromIntent = getIntent().getStringExtra("collection_id");
+        recipeToSave.setCollectionId(collectionIdFromIntent);
+
         String currentUserId = (auth.getCurrentUser() != null) ? auth.getCurrentUser().getUid() : null;
 
         btnSave.setEnabled(false);
@@ -396,7 +376,7 @@ public class AddRecipeActivity extends AppCompatActivity {
             db.collection("recipes").document(firestoreId)
                     .update(updates)
                     .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Receita atualizada!", Toast.LENGTH_SHORT).show();
+                        libertarReceita();
                         finish();
                     })
                     .addOnFailureListener(e -> {
@@ -404,28 +384,39 @@ public class AddRecipeActivity extends AppCompatActivity {
                         btnSave.setText("Salvar");
                         Toast.makeText(this, "Erro ao atualizar.", Toast.LENGTH_SHORT).show();
                     });
-        } else {
+        } else {// DENTRO DO ELSE (Nova Receita)
             if (currentUserId != null) {
                 recipeToSave.setOwnerId(currentUserId);
+
+                // CORREÇÃO: A lista de partilha deve começar VAZIA.
+                // Não adiciones o currentUserId aqui!
                 List<String> shares = new ArrayList<>();
-                shares.add(currentUserId);
                 recipeToSave.setSharedWith(shares);
-                Map<String, Boolean> perms = new HashMap<>();
-                perms.put(currentUserId, true);
-                recipeToSave.setPermissions(perms);
             }
 
             db.collection("recipes")
                     .add(recipeToSave)
-                    .addOnSuccessListener(documentReference -> {
-                        Toast.makeText(this, "Receita criada!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    })
+                    .addOnSuccessListener(documentReference -> finish())
                     .addOnFailureListener(e -> {
                         btnSave.setEnabled(true);
                         btnSave.setText("Salvar");
                         Toast.makeText(this, "Erro ao criar.", Toast.LENGTH_SHORT).show();
                     });
         }
+    }
+
+    private void libertarReceita() {
+        if (isEdit && firestoreId != null) {
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("editadoPorId", com.google.firebase.firestore.FieldValue.delete());
+            updates.put("tempoEdicao", com.google.firebase.firestore.FieldValue.delete());
+            db.collection("recipes").document(firestoreId).update(updates);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        libertarReceita();
     }
 }

@@ -39,6 +39,10 @@
 
         <activity android:name=".ProfileActivity"
             android:exported="false" />
+        <activity android:name=".AddCollectionActivity"
+            android:exported="false" />
+        <activity android:name=".ViewCollectionActivity"
+            android:exported="false" />
     </application>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>

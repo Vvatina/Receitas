@@ -12,52 +12,176 @@
         android:background="@drawable/papel_fundo"
         android:paddingHorizontal="0dp">
 
-        <TextView
-            android:id="@+id/tvTitle"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Minhas Receitas"
-            android:textSize="40dp"
-            android:fontFamily="@font/tangerine_regular"
-            android:textStyle="bold"
-            android:textColor="@color/ink_color"
-            android:gravity="center"
-            android:paddingTop="32dp"
-            android:paddingBottom="16dp"
-            android:elevation="4dp" />
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp">
 
-        <LinearLayout
-            android:layout_width="200dp"
-            android:layout_height="48dp"
-            android:background="@drawable/spinner_bg"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:elevation="2dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="12dp">
-
-            <Spinner
-                android:id="@+id/spinnerTypeFilter"
-                android:layout_width="0dp"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardProfilePic"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="6dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"> <ImageView
+                android:id="@+id/imgProfilePhoto"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:spinnerMode="dropdown"
-                android:dropDownVerticalOffset="8dp"
-                android:gravity="center_vertical"
-                android:popupBackground="@drawable/spinner_dropdown_bg">
-            </Spinner>
-        </LinearLayout>
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_camera" />
+            </androidx.cardview.widget.CardView>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewRecipes"
+            <TextView
+                android:id="@+id/tvProfileName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="O Teu Nome"
+                android:textSize="36dp"
+                android:fontFamily="@font/tangerine_regular"
+                android:textStyle="bold"
+                android:textColor="@color/ink_color"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cardProfilePic" />
+
+            <TextView
+                android:id="@+id/tvProfileBio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="32dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="A carregar a tua bio..."
+                android:textColor="#777777"
+                android:textSize="22dp"
+                android:fontFamily="@font/tangerine_regular"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvProfileName" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:tabIndicatorColor="#BAB095"
+            app:tabSelectedTextColor="#4E342E"
+            app:tabTextColor="#8D6E63"
+            app:tabIndicatorHeight="3dp">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="36dp"
+                android:fontFamily="@font/tangerine_regular"
+                android:text="Receitas" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Minhas coleções" />
+        </com.google.android.material.tabs.TabLayout>
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:padding="16dp"
-            android:paddingBottom="100dp"
-            android:scrollbars="vertical" />
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/layoutRecipes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="200dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/spinner_bg"
+                    android:fontFamily="@font/tangerine_regular"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:elevation="2dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <Spinner
+                        android:id="@+id/spinnerTypeFilter"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:spinnerMode="dropdown"
+                        android:fontFamily="@font/tangerine_regular"
+                        android:dropDownVerticalOffset="8dp"
+                        android:gravity="center_vertical"
+
+                        android:popupBackground="@drawable/spinner_dropdown_bg" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewRecipes"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:padding="16dp"
+                    android:paddingBottom="100dp"
+                    android:scrollbars="vertical" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutCollections"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewCollections"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:padding="16dp"
+                    android:paddingBottom="100dp"
+                    android:scrollbars="vertical" />
+            </LinearLayout>
+
+        </FrameLayout>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvEmptyList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nenhuma receita solta ainda 😋\nToque no botão + para adicionar"
+        android:fontFamily="@font/tangerine_regular"
+        android:textStyle="bold"
+        android:textColor="#777777"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvEmptyCollections"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📚\nCria uma coleção no botão + para organizar as receitas!"
+        android:fontFamily="@font/tangerine_regular"
+        android:textStyle="bold"
+        android:textColor="#777777"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
+        android:visibility="gone" />
 
     <ImageButton
         android:id="@+id/btnLogout"
@@ -66,30 +190,29 @@
         android:src="@android:drawable/ic_lock_power_off"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:layout_gravity="top|end"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        app:tint="#000000"
+        app:tint="@color/black"
         android:contentDescription="Sair / Logout" />
 
-    <TextView
-        android:id="@+id/tvEmptyList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nenhuma receita ainda 😋\nToque no botão + para adicionar"
-        android:fontFamily="@font/tangerine_regular"
-        android:textStyle="bold"
-        android:textColor="#777777"
-        android:textSize="20dp"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+    <ImageButton
+        android:id="@+id/btnSettings"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_menu_edit"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_gravity="top"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        app:tint="@color/black"
+        android:contentDescription="Editar Perfil" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnAddRecipe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add_white_24dp"
-        android:contentDescription="Adicionar Receita"
+        android:contentDescription="Adicionar"
         app:backgroundTint="#BAB095"
         app:tint="@android:color/white"
         android:elevation="8dp"

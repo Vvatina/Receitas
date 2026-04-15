@@ -1,9 +1,11 @@
 package com.example.receitas;
 
 import android.content.Intent;
+import android.graphics.Color; // ADICIONADO
+import android.graphics.Typeface; // ADICIONADO
+import android.graphics.drawable.GradientDrawable; // ADICIONADO
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat; // ADICIONADO
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -50,6 +53,22 @@ public class RegisterActivity extends AppCompatActivity {
         registerButton = findViewById(R.id.registerButton);
         loginTextView = findViewById(R.id.loginTextView);
 
+        // --- APLICAR ESTILO PADRONIZADO AO BOTÃO ---
+        estilizarBotao(registerButton);
+
+        // --- OPCIONAL: APLICAR FONTE TANGERINE ---
+        // Descomenta as linhas abaixo se quiseres a fonte igual à da AddRecipeActivity
+        /*
+        Typeface tangerine = ResourcesCompat.getFont(this, R.font.tangerine_regular);
+        usernameEditText.setTypeface(tangerine, Typeface.BOLD);
+        emailEditText.setTypeface(tangerine, Typeface.BOLD);
+        passwordEditText.setTypeface(tangerine, Typeface.BOLD);
+        registerButton.setTypeface(tangerine, Typeface.BOLD);
+        usernameEditText.setTextSize(25f);
+        emailEditText.setTextSize(25f);
+        passwordEditText.setTextSize(25f);
+        */
+
         // Botão de cadastro
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,25 +100,35 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Método adicionado para aplicar a cor #BAB095 e bordas arredondadas ao botão.
+     */
+    private void estilizarBotao(Button btn) {
+        btn.setBackgroundTintList(null);
+
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setColor(Color.parseColor("#BAB095"));
+        drawable.setCornerRadius(14f);
+
+        btn.setBackground(drawable);
+        btn.setTextColor(Color.WHITE);
+        btn.setAllCaps(false);
+        btn.setTextSize(30f);
+    }
+
     private void registerUser(String username, String email, String password) {
         registerButton.setEnabled(false);
         registerButton.setText("A criar conta...");
 
-        // 1. Criar utilizador na Autenticação do Firebase
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sucesso! A conta foi criada no Firebase Auth.
                             FirebaseUser user = mAuth.getCurrentUser();
-
-                            // 2. Agora sim, chamamos o teu método perfeito lá de baixo
-                            // e passamos-lhe o user e o username que o utilizador digitou!
                             saveUserToFirestore(user, username);
-
                         } else {
-                            // Se der erro (ex: password fraca, email já existe)
                             registerButton.setEnabled(true);
                             registerButton.setText("CADASTRAR");
                             Toast.makeText(RegisterActivity.this, "Erro ao criar conta: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -111,21 +140,17 @@ public class RegisterActivity extends AppCompatActivity {
     private void saveUserToFirestore(FirebaseUser user, String username) {
         if (user == null) return;
 
-        // Criar um mapa com os dados do utilizador
         Map<String, Object> userData = new HashMap<>();
         userData.put("uid", user.getUid());
         userData.put("username", username);
         userData.put("email", user.getEmail());
 
-        // 2. Salvar na coleção "users" usando o UID como ID do documento
         db.collection("users").document(user.getUid())
                 .set(userData)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(RegisterActivity.this, "Conta criada com sucesso!", Toast.LENGTH_SHORT).show();
 
-                    // Vai direto para o App (MainActivity) pois o Firebase já faz o login automático após o registo
                     Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                    // Limpa a stack para o utilizador não voltar ao registo se clicar em voltar
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();

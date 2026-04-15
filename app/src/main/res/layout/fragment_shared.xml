@@ -1,35 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/papel_fundo">
-    <TextView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Partilhadas Comigo"
-    android:textSize="40dp"
-    android:textStyle="bold"
-    android:textColor="@color/ink_color"
-    android:fontFamily="@font/tangerine_regular"
-    android:gravity="center"
-    android:paddingTop="32dp"
-    android:paddingBottom="16dp" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewShared"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        android:clipToPadding="false"/>
 
     <TextView
-        android:id="@+id/tvEmptyShared"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ninguém partilhou receitas consigo ainda."
+        android:text="Partilhadas Comigo"
+        android:textSize="40dp"
+        android:textStyle="bold"
+        android:textColor="@color/ink_color"
+        android:fontFamily="@font/tangerine_regular"
         android:gravity="center"
-        android:visibility="gone"
-        android:layout_marginTop="50dp"/>
+        android:paddingTop="32dp"
+        android:paddingBottom="16dp" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutShared"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:tabIndicatorColor="@color/ink_color"
+        app:tabSelectedTextColor="@color/ink_color"
+        app:tabTextColor="#888888">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Receitas" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Coleções" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutSharedRecipes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewSharedRecipes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:clipToPadding="false"/>
+
+        <TextView
+            android:id="@+id/tvEmptySharedRecipes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nenhuma receita partilhada consigo ainda."
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="50dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutSharedCollections"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewSharedCollections"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:clipToPadding="false"/>
+
+        <TextView
+            android:id="@+id/tvEmptySharedCollections"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nenhuma coleção partilhada consigo ainda."
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="50dp"/>
+    </LinearLayout>
 
 </LinearLayout>

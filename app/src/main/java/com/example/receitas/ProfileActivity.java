@@ -3,6 +3,8 @@ package com.example.receitas;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color; // ADICIONADO
+import android.graphics.drawable.GradientDrawable; // ADICIONADO
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
@@ -43,7 +45,7 @@ public class ProfileActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     imagemSelecionadaUri = result.getData().getData();
                     if (imagemSelecionadaUri != null) {
-                        // ALTERAÇÃO 1: Carregar a imagem diretamente no ImageView (Quadrada)
+                        // Carregar a imagem diretamente no ImageView (Quadrada)
                         imgProfile.setImageURI(imagemSelecionadaUri);
                         imgProfile.setPadding(0, 0, 0, 0);
                         imgProfile.setColorFilter(null);
@@ -62,11 +64,13 @@ public class ProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         editUsername = findViewById(R.id.editUsername);
-        editBio = findViewById(R.id.editBio);
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
         imgProfile = findViewById(R.id.imgProfile);
         btnGuardar = findViewById(R.id.btnSaveProfile);
+
+        // --- APLICAR ESTILO PADRONIZADO (Cor #BAB095) ---
+        estilizarBotao(btnGuardar);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
@@ -85,6 +89,28 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         btnGuardar.setOnClickListener(v -> guardarDados(currentUser));
+    }
+
+    /**
+     * Método adicionado para aplicar a cor #BAB095 e bordas arredondadas ao botão.
+     */
+    private void estilizarBotao(Button btn) {
+        // Remove a cor de "tint" padrão do Android
+        btn.setBackgroundTintList(null);
+
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+
+        // Define a cor solicitada: #BAB095
+        drawable.setColor(Color.parseColor("#BAB095"));
+
+        // Define bordas arredondadas
+        drawable.setCornerRadius(14f);
+
+        btn.setBackground(drawable);
+        btn.setTextColor(Color.WHITE); // Texto branco para contraste
+        btn.setAllCaps(false); // Mantém o estilo da fonte (se aplicável)
+        btn.setTextSize(20f);
     }
 
     private void carregarDadosDoUtilizador(FirebaseUser user) {
@@ -113,7 +139,6 @@ public class ProfileActivity extends AppCompatActivity {
                                         imgProfile.setColorFilter(null);
                                         imgProfile.setImageBitmap(bitmap);
 
-                                        // Log para debug (podes ver no Logcat se isto aparece)
                                         System.out.println("Imagem carregada com sucesso!");
                                     });
                                 } else {
