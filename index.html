@@ -16,7 +16,7 @@
 }
 
 body {
-    background: #FFF8EE; /* Cor de fundo limpa para mobile */
+    background: #FFF8EE; 
     font-family: Poppins, sans-serif;
     display: flex;
     justify-content: center;
@@ -30,7 +30,7 @@ body {
     width: 100%;
     max-width: 900px;
     background: #FFF8EE;
-    padding: 10px 5px; /* Menos espaço vertical */
+    padding: 10px 5px; 
     text-align: center;
 }
 
@@ -94,7 +94,8 @@ h1 {
 .info {
     margin-top: 30px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Mostra os blocos lado a lado no mobile */
+    /* Divide em 2 colunas no mobile para economizar altura */
+    grid-template-columns: repeat(2, 1fr); 
     gap: 12px;
     justify-content: center;
 }
@@ -107,6 +108,7 @@ h1 {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-height: 105px;
 }
 
 .card h3 {
@@ -140,7 +142,7 @@ footer {
     }
     .container {
         padding: 50px;
-        border: 10px double #B88A4A; /* Moldura bonita apenas no PC */
+        border: 10px double #B88A4A; 
         background: #FFF8EE;
         border-radius: 8px;
         box-shadow: 0 15px 40px rgba(0,0,0,.2);
@@ -168,7 +170,7 @@ footer {
         gap: 15px;
     }
     .card {
-        width: 200px;
+        width: 180px;
         padding: 20px;
     }
     .card h3 {
@@ -210,17 +212,22 @@ footer {
 <div class="info">
     <div class="card">
         <h3>🍰 Receitas</h3>
-        <p>Centenas de receitas organizadas.</p>
+        <p>Centenas de pratos.</p>
     </div>
 
     <div class="card">
         <h3>📂 Coleções</h3>
-        <p>Organize listas por categorias.</p>
+        <p>Listas personalizadas.</p>
     </div>
 
     <div class="card">
         <h3>🔗 Partilha</h3>
-        <p>Partilhe de forma simples.</p>
+        <p>Envie aos amigos.</p>
+    </div>
+
+    <div class="card">
+        <h3>📱 Offline</h3>
+        <p>Aceda sem Internet.</p>
     </div>
 </div>
 
