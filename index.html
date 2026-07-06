@@ -9,196 +9,177 @@
 <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-body{
-
-background:#F6EAD8;
-background-image:
-radial-gradient(circle,#ffffff33 1px,transparent 1px),
-linear-gradient(#F6EAD8,#EED8B8);
-
-background-size:20px 20px,100% 100%;
-
-font-family:Poppins,sans-serif;
-
-display:flex;
-justify-content:center;
-align-items:center;
-
-min-height:100vh;
-padding:40px;
-
-color:#4A2F23;
-
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.container{
-
-max-width:900px;
-width:100%;
-
-background:#FFF8EE;
-
-padding:50px;
-
-border:10px double #B88A4A;
-
-border-radius:8px;
-
-box-shadow:0 15px 40px rgba(0,0,0,.2);
-
-text-align:center;
-
+body {
+    background: #FFF8EE; /* Cor de fundo limpa para mobile */
+    font-family: Poppins, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px;
+    color: #4A2F23;
 }
 
-.pap{
-
-letter-spacing:4px;
-
-font-size:13px;
-
-color:#8C6A43;
-
-margin-bottom:15px;
-
-text-transform:uppercase;
-
+.container {
+    width: 100%;
+    max-width: 900px;
+    background: #FFF8EE;
+    padding: 10px 5px; /* Menos espaço vertical */
+    text-align: center;
 }
 
-h1{
-
-font-family:'Tangerine',cursive;
-
-font-size:90px;
-
-color:#6B3E26;
-
+.pap {
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: #8C6A43;
+    margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
-.linha{
-
-width:180px;
-height:2px;
-
-background:#B88A4A;
-
-margin:20px auto;
-
+h1 {
+    font-family: 'Tangerine', cursive;
+    font-size: 55px;
+    color: #6B3E26;
+    line-height: 1;
+    margin-bottom: 5px;
 }
 
-.subtitulo{
-
-font-size:18px;
-
-line-height:1.8;
-
-color:#6E543C;
-
-max-width:700px;
-
-margin:auto auto 40px;
-
+.linha {
+    width: 100px;
+    height: 2px;
+    background: #B88A4A;
+    margin: 12px auto;
 }
 
-.logo{
-
-    display:block;
-    width:120px;
-    height:auto;
-
-    margin:0 auto 30px auto;
-
+.subtitulo {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6E543C;
+    max-width: 700px;
+    margin: auto auto 25px;
 }
 
-.btn{
-
-display:inline-block;
-
-padding:18px 45px;
-
-background:#9B6A39;
-
-color:white;
-
-text-decoration:none;
-
-font-weight:500;
-
-font-size:18px;
-
-border-radius:8px;
-
-border:2px solid #7B522D;
-
-transition:.3s;
-
+.logo {
+    width: 100px;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 25px;
 }
 
-.btn:hover{
-
-background:#7B522D;
-
+.btn {
+    display: inline-block;
+    padding: 14px 30px;
+    background: #9B6A39;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 2px solid #7B522D;
+    transition: .3s;
+    width: 100%;
+    max-width: 280px;
 }
 
-.info{
-
-margin-top:60px;
-
-display:flex;
-
-justify-content:center;
-
-gap:25px;
-
-flex-wrap:wrap;
-
+.btn:hover {
+    background: #7B522D;
 }
 
-.card{
-
-background:#FCF3E6;
-
-border:2px solid #D6B88A;
-
-padding:25px;
-
-width:200px;
-
-border-radius:10px;
-
+.info {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Mostra os blocos lado a lado no mobile */
+    gap: 12px;
+    justify-content: center;
 }
 
-.card h3{
-
-margin-bottom:10px;
-
-color:#6B3E26;
-
+.card {
+    background: #FCF3E6;
+    border: 1.5px solid #D6B88A;
+    padding: 15px 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.card p{
-
-font-size:15px;
-
-line-height:1.5;
-
+.card h3 {
+    margin-bottom: 6px;
+    color: #6B3E26;
+    font-size: 14px;
 }
 
-footer{
+.card p {
+    font-size: 12px;
+    line-height: 1.4;
+}
 
-margin-top:60px;
+footer {
+    margin-top: 35px;
+    font-size: 11px;
+    color: #8C6A43;
+    font-style: italic;
+    line-height: 1.4;
+}
 
-font-size:14px;
-
-color:#8C6A43;
-
-font-style:italic;
-
+/* --- Media Query para computadores/tablets --- */
+@media (min-width: 768px) {
+    body {
+        background: #F6EAD8;
+        background-image:
+            radial-gradient(circle, #ffffff33 1px, transparent 1px),
+            linear-gradient(#F6EAD8, #EED8B8);
+        background-size: 20px 20px, 100% 100%;
+        padding: 40px;
+    }
+    .container {
+        padding: 50px;
+        border: 10px double #B88A4A; /* Moldura bonita apenas no PC */
+        background: #FFF8EE;
+        border-radius: 8px;
+        box-shadow: 0 15px 40px rgba(0,0,0,.2);
+    }
+    h1 {
+        font-size: 90px;
+    }
+    .pap {
+        letter-spacing: 4px;
+        font-size: 13px;
+    }
+    .subtitulo {
+        font-size: 18px;
+    }
+    .logo {
+        width: 150px;
+    }
+    .btn {
+        width: auto;
+        font-size: 18px;
+    }
+    .info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .card {
+        width: 200px;
+        padding: 20px;
+    }
+    .card h3 {
+        font-size: 16px;
+    }
+    .card p {
+        font-size: 14px;
+    }
+    footer {
+        font-size: 12px;
+    }
 }
 </style>
 
@@ -208,51 +189,43 @@ font-style:italic;
 <div class="container">
 
 <header class="pap-header">
-
     <p class="pap">PROVA DE APTIDÃO PROFISSIONAL</p>
-
     <h1>Receita de Bolso</h1>
-
     <div class="linha"></div>
-
     <p class="subtitulo">
         Aplicação móvel desenvolvida para organização de receitas culinárias,
         permitindo guardar, pesquisar e consultar receitas de forma simples,
         rápida e totalmente offline.
     </p>
-
 </header>
 
-<img src="logo.png" class="logo">
+<img src="logo.png" class="logo" alt="Logo Receita de Bolso">
 
-<a class="btn"
-href="https://github.com/Vvatina/Receitas/releases/download/v1.0.0/app-release.apk">
-📱 Baixar APK
-</a>
+<div style="margin-bottom: 20px;">
+    <a class="btn" href="https://github.com/Vvatina/Receitas/releases/download/v1.0.0/app-release.apk">
+    📱 Baixar APK
+    </a>
+</div>
 
 <div class="info">
+    <div class="card">
+        <h3>🍰 Receitas</h3>
+        <p>Centenas de receitas organizadas.</p>
+    </div>
 
-<div class="card">
-<h3>🍰 Receitas</h3>
-<p>Centenas de receitas organizadas.</p>
-</div>
+    <div class="card">
+        <h3>📂 Coleções</h3>
+        <p>Organize listas por categorias.</p>
+    </div>
 
-<div class="card">
-<h3>❤️ Favoritos</h3>
-<p>Guarde as suas receitas preferidas.</p>
-</div>
-
-<div class="card">
-<h3>📱 Offline</h3>
-<p>Consulte as receitas sem Internet.</p>
-</div>
-
+    <div class="card">
+        <h3>🔗 Partilha</h3>
+        <p>Partilhe de forma simples.</p>
+    </div>
 </div>
 
 <footer>
-
-P.A.P. • Curso Profissional de Técnico de Gestão e Programação de Sistemas Informáticos
-
+    P.A.P. • Curso Profissional de Técnico de Gestão e Programação de Sistemas Informáticos
 </footer>
 
 </div>
