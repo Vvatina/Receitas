@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Receita de Bolso</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #FFF8EE; 
+    font-family: Poppins, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px;
+    color: #4A2F23;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    background: #FFF8EE;
+    padding: 10px 5px; 
+    text-align: center;
+}
+
+.pap {
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: #8C6A43;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+h1 {
+    font-family: 'Tangerine', cursive;
+    font-size: 55px;
+    color: #6B3E26;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.linha {
+    width: 100px;
+    height: 2px;
+    background: #B88A4A;
+    margin: 12px auto;
+}
+
+.subtitulo {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6E543C;
+    max-width: 700px;
+    margin: auto auto 25px;
+}
+
+.logo {
+    width: 100px;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 25px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 14px 30px;
+    background: #9B6A39;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 2px solid #7B522D;
+    transition: .3s;
+    width: 100%;
+    max-width: 280px;
+}
+
+.btn:hover {
+    background: #7B522D;
+}
+
+.info {
+    margin-top: 30px;
+    display: grid;
+    /* Divide em 2 colunas no mobile para economizar altura */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 12px;
+    justify-content: center;
+}
+
+.card {
+    background: #FCF3E6;
+    border: 1.5px solid #D6B88A;
+    padding: 15px 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 105px;
+}
+
+.card h3 {
+    margin-bottom: 6px;
+    color: #6B3E26;
+    font-size: 14px;
+}
+
+.card p {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+footer {
+    margin-top: 35px;
+    font-size: 11px;
+    color: #8C6A43;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* --- Media Query para computadores/tablets --- */
+@media (min-width: 768px) {
+    body {
+        background: #F6EAD8;
+        background-image:
+            radial-gradient(circle, #ffffff33 1px, transparent 1px),
+            linear-gradient(#F6EAD8, #EED8B8);
+        background-size: 20px 20px, 100% 100%;
+        padding: 40px;
+    }
+    .container {
+        padding: 50px;
+        border: 10px double #B88A4A; 
+        background: #FFF8EE;
+        border-radius: 8px;
+        box-shadow: 0 15px 40px rgba(0,0,0,.2);
+    }
+    h1 {
+        font-size: 90px;
+    }
+    .pap {
+        letter-spacing: 4px;
+        font-size: 13px;
+    }
+    .subtitulo {
+        font-size: 18px;
+    }
+    .logo {
+        width: 150px;
+    }
+    .btn {
+        width: auto;
+        font-size: 18px;
+    }
+    .info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .card {
+        width: 180px;
+        padding: 20px;
+    }
+    .card h3 {
+        font-size: 16px;
+    }
+    .card p {
+        font-size: 14px;
+    }
+    footer {
+        font-size: 12px;
+    }
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<header class="pap-header">
+    <p class="pap">PROVA DE APTIDÃO PROFISSIONAL</p>
+    <h1>Receita de Bolso</h1>
+    <div class="linha"></div>
+    <p class="subtitulo">
+        Aplicação móvel desenvolvida para organização de receitas culinárias,
+        permitindo guardar, pesquisar e consultar receitas de forma simples,
+        rápida e totalmente offline.
+    </p>
+</header>
+
+<img src="logo.png" class="logo" alt="Logo Receita de Bolso">
+
+<div style="margin-bottom: 20px;">
+    <a class="btn" href="https://github.com/Vvatina/Receitas/releases/download/v1.0.0/app-release.apk">
+    📱 Baixar APK
+    </a>
+</div>
+
+<div class="info">
+    <div class="card">
+        <h3>🍰 Receitas</h3>
+        <p>Centenas de pratos.</p>
+    </div>
+
+    <div class="card">
+        <h3>📂 Coleções</h3>
+        <p>Listas personalizadas.</p>
+    </div>
+
+    <div class="card">
+        <h3>🔗 Partilha</h3>
+        <p>Envie aos amigos.</p>
+    </div>
+
+    <div class="card">
+        <h3>📱 Offline</h3>
+        <p>Aceda sem Internet.</p>
+    </div>
+</div>
+
+<footer>
+    P.A.P. • Curso Profissional de Técnico de Gestão e Programação de Sistemas Informáticos
+</footer>
+
+</div>
+
+</body>
+</html>
