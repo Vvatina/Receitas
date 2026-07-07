@@ -21,6 +21,7 @@ import android.widget.Switch; // IMPORTANTE: Para o Switch
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
@@ -53,8 +54,11 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.layout.properties.Property; // Certifique-se de importar isto
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -291,117 +295,190 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
         layoutStepsContainer.addView(stepLayout);
     }
-
     private void exportRecipeToDownloads(Recipe recipe) {
         try {
             String fileName = "Receita_" + recipe.getName().replaceAll("\\W+", "_") + ".pdf";
             Uri pdfUri = null;
             OutputStream outputStream = null;
 
+            // Configuração do destino do ficheiro (MediaStore para Android 10+ ou File para antigos)
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 ContentValues values = new ContentValues();
                 values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-                values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-                values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download/Receitas");
+                values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/pdf");                values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download");
                 pdfUri = getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (pdfUri != null) outputStream = getContentResolver().openOutputStream(pdfUri);
             } else {
-                File downloadsDir = new File(Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DOWNLOADS), "Receitas");
+                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 if (!downloadsDir.exists()) downloadsDir.mkdirs();
                 File pdfFile = new File(downloadsDir, fileName);
                 outputStream = new java.io.FileOutputStream(pdfFile);
                 pdfUri = Uri.fromFile(pdfFile);
             }
 
-            if (outputStream == null) return;
+            if (outputStream == null) {
+                Toast.makeText(this, "Erro ao criar ficheiro PDF", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             PdfWriter writer = new PdfWriter(outputStream);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            DeviceRgb colorDeepPurple = new DeviceRgb(74, 20, 140);
+            // Definição de Cores
+            DeviceRgb colorTitle = new DeviceRgb(74, 20, 140);
+            DeviceRgb colorSubtitle = new DeviceRgb(120, 120, 120);
             DeviceRgb colorText = new DeviceRgb(50, 50, 50);
 
-            document.add(new Paragraph("\n"));
+            // ========================================
+            // PÁGINA 1: CAPA
+            // ========================================
+            document.add(new Paragraph("\n\n"));
             document.add(new Paragraph(recipe.getName().toUpperCase())
-                    .setFontSize(24f).setBold().setFontColor(colorDeepPurple).setTextAlignment(TextAlignment.CENTER));
+                    .setFontSize(28f).setBold().setFontColor(colorTitle)
+                    .setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(recipe.getType())
-                    .setFontSize(14f).setItalic().setFontColor(ColorConstants.GRAY)
-                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(10f));
+                    .setFontSize(16f).setItalic().setFontColor(colorSubtitle)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20f));
 
-            if (recipe.getMainImageUri() != null) {
-                addImageToPDFStyled(recipe.getMainImageUri(), document);
+            if (recipe.getMainImageUri() != null && !recipe.getMainImageUri().isEmpty()) {
+                addImageToPDFCover(recipe.getMainImageUri(), document);
             }
 
-            document.add(new Paragraph("\nPor: " + currentAuthorName)
-                    .setFontSize(10f).setFontColor(ColorConstants.GRAY).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("\nReceita de: " + currentAuthorName)
+                    .setFontSize(12f).setFontColor(colorSubtitle)
+                    .setTextAlignment(TextAlignment.CENTER));
 
+            // ========================================
+            // PÁGINA 2: INGREDIENTES
+            // ========================================
             document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
-
             document.add(new Paragraph("INGREDIENTES")
-                    .setFontSize(16f).setBold().setFontColor(colorDeepPurple).setUnderline());
+                    .setFontSize(22f).setBold().setFontColor(colorTitle).setMarginBottom(10f));
+
+            SolidLine line = new SolidLine(1f);
+            line.setColor(colorTitle);
+            document.add(new LineSeparator(line).setMarginBottom(15f));
 
             String[] ingredients = recipe.getIngredients().split("\n");
-            for(String ing : ingredients) {
-                document.add(new Paragraph("• " + ing).setFontSize(12f));
+            for (String ing : ingredients) {
+                if (!ing.trim().isEmpty()) {
+                    document.add(new Paragraph("• " + ing.trim())
+                            .setFontSize(14f).setFontColor(colorText).setMarginBottom(5f));
+                }
             }
 
-            document.add(new Paragraph("\nPREPARO")
-                    .setFontSize(16f).setBold().setFontColor(colorDeepPurple).setUnderline().setMarginTop(20f));
-
+            // ========================================
+            // PÁGINAS SEGUINTES: UM PASSO POR PÁGINA
+            // ========================================
             if (recipe.getInstructions() != null && !recipe.getInstructions().isEmpty()) {
                 Gson gson = new Gson();
                 Type stepListType = new TypeToken<ArrayList<Step>>(){}.getType();
                 List<Step> stepList = gson.fromJson(recipe.getInstructions(), stepListType);
 
-                int i = 1;
+                int stepNumber = 1;
                 for (Step step : stepList) {
-                    document.add(new Paragraph("Passo " + i).setBold().setFontColor(colorDeepPurple).setMarginTop(10f));
-                    document.add(new Paragraph(step.getInstructionText()).setTextAlignment(TextAlignment.JUSTIFIED));
+                    // Força nova página para cada passo
+                    document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
-                    if (step.getImageUri() != null) {
-                        addImageToPDFStyled(step.getImageUri(), document);
+                    document.add(new Paragraph("PASSO " + stepNumber)
+                            .setFontSize(20f).setBold().setFontColor(colorTitle).setMarginBottom(10f));
+
+                    SolidLine stepLine = new SolidLine(1f);
+                    stepLine.setColor(colorTitle);
+                    document.add(new LineSeparator(stepLine).setMarginBottom(15f));
+
+                    document.add(new Paragraph(step.getInstructionText())
+                            .setFontSize(14f).setFontColor(colorText)
+                            .setTextAlignment(TextAlignment.JUSTIFIED).setMarginBottom(20f));
+
+                    if (step.getImageUri() != null && !step.getImageUri().isEmpty()) {
+                        addImageToPDFStep(step.getImageUri(), document);
                     }
-                    i++;
+                    stepNumber++;
                 }
             }
 
             document.close();
-            Toast.makeText(this, "PDF salvo em Downloads!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "PDF salvo em Transferências!", Toast.LENGTH_LONG).show();
 
+            // Abrir o PDF
             if (pdfUri != null) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setDataAndType(pdfUri, "application/pdf");
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(intent);
-                }
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Erro ao gerar PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Erro: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-    private void addImageToPDFStyled(String uriString, Document document) {
+    // Imagem da capa (maior e centralizada)
+    private void addImageToPDFCover(String uriString, Document document) {
         try {
             Uri uri = Uri.parse(uriString);
             java.io.InputStream is = getContentResolver().openInputStream(uri);
             if (is != null) {
-                byte[] bytes = new byte[is.available()];
-                is.read(bytes);
+                // Leitura completa de bytes para evitar ficheiros corrompidos
+                java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+                int nRead;
+                byte[] data = new byte[16384];
+                while ((nRead = is.read(data, 0, data.length)) != -1) {
+                    buffer.write(data, 0, nRead);
+                }
+                byte[] bytes = buffer.toByteArray();
                 is.close();
+
                 ImageData imageData = ImageDataFactory.create(bytes);
                 Image img = new Image(imageData);
-                img.setAutoScale(true);
-                img.setMaxHeight(300);
+
+                // Ajuste para a capa: largura de 90% e altura máxima
+                img.setWidth(UnitValue.createPercentValue(90));
+                img.setMaxHeight(400f);
                 img.setHorizontalAlignment(HorizontalAlignment.CENTER);
                 document.add(img);
             }
         } catch (Exception e) {
+            Log.e("PDF", "Erro imagem capa: " + e.getMessage());
+        }
+    }
+
+    // Imagem dos passos (tamanho médio)
+    private void addImageToPDFStep(String uriString, Document document) {
+        try {
+            Uri uri = Uri.parse(uriString);
+            java.io.InputStream is = getContentResolver().openInputStream(uri);
+            if (is != null) {
+                // Garante que a imagem é lida byte a byte até ao fim
+                java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+                int nRead;
+                byte[] data = new byte[16384];
+                while ((nRead = is.read(data, 0, data.length)) != -1) {
+                    buffer.write(data, 0, nRead);
+                }
+                byte[] bytes = buffer.toByteArray();
+                is.close();
+
+                ImageData imageData = ImageDataFactory.create(bytes);
+                Image img = new Image(imageData);
+
+                // TAMANHO UNIFORME: Todas as imagens terão 85% da largura da página
+                img.setWidth(UnitValue.createPercentValue(85));
+                img.setMaxHeight(450f); // Altura generosa já que está numa página só
+
+                img.setHorizontalAlignment(HorizontalAlignment.CENTER);
+                img.setMarginTop(10f);
+
+                // Impede que a imagem mude de página sozinha se houver espaço
+                img.setProperty(Property.KEEP_TOGETHER, true);
+                document.add(img);
+            }
+        } catch (Exception e) {
+            Log.e("PDF", "Erro imagem passo: " + e.getMessage());
         }
     }
 }

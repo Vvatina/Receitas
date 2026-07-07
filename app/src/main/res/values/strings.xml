@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Receitas</string>
+    <string name="app_name">Receita de Bolso</string>
 
     <string-array name="recipe_types">
         <item>Doce</item>

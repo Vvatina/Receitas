@@ -58,7 +58,7 @@ public class AddCollectionActivity extends AppCompatActivity {
         // 1. Criar o objeto vazio
         RecipeCollection newCollection = new RecipeCollection();
 
-        // 2. Preencher os dados COM CERTEZA ABSOLUTA dos nomes
+        // 2. Preencher os dados dos nomes
         newCollection.setName(name);
         newCollection.setOwnerId(currentUserId);
         newCollection.setSharedWith(new java.util.ArrayList<>()); // INICIALIZA A LISTA VAZIA!

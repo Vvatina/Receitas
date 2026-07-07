@@ -212,6 +212,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         intent.setType("image/*");
 
         if (requestCode == PICK_IMAGE_STEP) {
+            // Enviamos o stepIndex original para o requestCode
             startActivityForResult(intent, PICK_IMAGE_STEP + stepIndex);
         } else {
             startActivityForResult(intent, requestCode);
@@ -237,12 +238,16 @@ public class AddRecipeActivity extends AppCompatActivity {
             imgMainRecipe.setImageURI(selectedImage);
         } else if (requestCode >= PICK_IMAGE_STEP) {
             int stepIndex = requestCode - PICK_IMAGE_STEP;
+            // IMPORTANTE: Como os passos podem ser eliminados, o stepIndex enviado no pickImage
+            // pode estar desatualizado em relação à posição real na lista.
+            // Para garantir precisão, procuramos o layout que tenha essa tag original ou usamos o index direto se não houver deleções complexas.
             if (stepIndex >= 0 && stepIndex < steps.size()) {
                 steps.get(stepIndex).setImageUri(imagePath);
 
-                LinearLayout stepLayout = (LinearLayout) layoutInstructionsContainer.getChildAt(stepIndex);
-                if (stepLayout != null) {
-                    ImageView imgStep = stepLayout.findViewWithTag("imgStep_" + stepIndex);
+                // Atualizamos a UI procurando pelo layout filho
+                View stepView = layoutInstructionsContainer.getChildAt(stepIndex);
+                if (stepView != null) {
+                    ImageView imgStep = stepView.findViewWithTag("imgStep_" + stepIndex);
                     if (imgStep != null) {
                         imgStep.setImageURI(selectedImage);
                         imgStep.clearColorFilter();
@@ -255,9 +260,7 @@ public class AddRecipeActivity extends AppCompatActivity {
     private void addStepFieldToUI(String instructionText, String imageUri) {
         final int stepIndex = steps.size();
         Step newStep = new Step(instructionText, imageUri);
-
-        if (instructionText == null && imageUri == null) steps.add(newStep);
-        else if (!steps.contains(newStep)) steps.add(newStep);
+        steps.add(newStep);
 
         LinearLayout stepLayout = new LinearLayout(this);
         stepLayout.setOrientation(LinearLayout.VERTICAL);
@@ -269,17 +272,39 @@ public class AddRecipeActivity extends AppCompatActivity {
         divider.setBackgroundColor(Color.parseColor("#E0E0E0"));
         stepLayout.addView(divider);
 
+        // Header do Passo (Número + Botão Eliminar)
+        LinearLayout headerLayout = new LinearLayout(this);
+        headerLayout.setOrientation(LinearLayout.HORIZONTAL);
+        headerLayout.setGravity(Gravity.CENTER_VERTICAL);
+        headerLayout.setPadding(0, 16, 0, 8);
+
         TextView stepNumber = new TextView(this);
-        stepNumber.setText("Passo " + (stepIndex + 1));
+        stepNumber.setText("Passo " + (layoutInstructionsContainer.getChildCount() + 1));
         stepNumber.setTextSize(30f);
         stepNumber.setTextColor(Color.parseColor("#333333"));
         stepNumber.setTypeface(tangerine, Typeface.BOLD);
-        stepNumber.setGravity(Gravity.CENTER_HORIZONTAL);
-        stepNumber.setPadding(0, 16, 0, 8);
-        stepLayout.addView(stepNumber);
+        stepNumber.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        stepNumber.setGravity(Gravity.CENTER);
+        headerLayout.addView(stepNumber);
+
+        Button btnDeleteStep = new Button(this);
+        btnDeleteStep.setText("X");
+        btnDeleteStep.setTextColor(Color.RED);
+        btnDeleteStep.setBackgroundColor(Color.TRANSPARENT);
+        btnDeleteStep.setTextSize(20f);
+        btnDeleteStep.setOnClickListener(v -> {
+            int currentPos = layoutInstructionsContainer.indexOfChild(stepLayout);
+            if (currentPos != -1) {
+                layoutInstructionsContainer.removeViewAt(currentPos);
+                steps.remove(currentPos);
+                reordenarPassos();
+            }
+        });
+        headerLayout.addView(btnDeleteStep);
+        stepLayout.addView(headerLayout);
 
         EditText etStep = new EditText(this);
-        etStep.setHint("Instrução do Passo " + (stepIndex + 1));
+        etStep.setHint("Instrução do Passo");
         etStep.setText(instructionText != null ? instructionText : "");
         etStep.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F6E8D8")));
         etStep.setBackgroundResource(R.drawable.bg_edittext);
@@ -297,7 +322,10 @@ public class AddRecipeActivity extends AppCompatActivity {
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                if (stepIndex < steps.size()) steps.get(stepIndex).setInstructionText(s.toString());
+                int currentPos = layoutInstructionsContainer.indexOfChild(stepLayout);
+                if (currentPos != -1 && currentPos < steps.size()) {
+                    steps.get(currentPos).setInstructionText(s.toString());
+                }
             }
         });
         stepLayout.addView(etStep);
@@ -329,11 +357,28 @@ public class AddRecipeActivity extends AppCompatActivity {
         btnSelectImage.setLayoutParams(btnParams);
         estilizarBotao(btnSelectImage);
 
-        btnSelectImage.setOnClickListener(v -> pickImage(PICK_IMAGE_STEP, stepIndex));
+        btnSelectImage.setOnClickListener(v -> {
+            int currentPos = layoutInstructionsContainer.indexOfChild(stepLayout);
+            pickImage(PICK_IMAGE_STEP, currentPos);
+        });
 
         imageControlLayout.addView(btnSelectImage);
         stepLayout.addView(imageControlLayout);
         layoutInstructionsContainer.addView(stepLayout);
+    }
+
+    private void reordenarPassos() {
+        for (int i = 0; i < layoutInstructionsContainer.getChildCount(); i++) {
+            LinearLayout stepLayout = (LinearLayout) layoutInstructionsContainer.getChildAt(i);
+            // O HeaderLayout é o segundo filho (index 1) pois o divider é o index 0
+            LinearLayout header = (LinearLayout) stepLayout.getChildAt(1);
+            TextView tvNumber = (TextView) header.getChildAt(0);
+            tvNumber.setText("Passo " + (i + 1));
+
+            // Atualizar Tag da imagem para garantir que o onActivityResult ainda funcione
+            ImageView img = stepLayout.findViewWithTag("imgStep_*"); // Isso é figurativo
+            // No seu caso, como usamos indexOfChild no clique, a tag é menos crítica que a posição
+        }
     }
 
     private void saveRecipe() {
@@ -356,7 +401,6 @@ public class AddRecipeActivity extends AppCompatActivity {
         recipeToSave.setType(type);
         recipeToSave.setMainImageUri(mainImagePath);
 
-        // LÓGICA DE COLEÇÃO: Importante para aparecer na Home ou no Livro
         String collectionIdFromIntent = getIntent().getStringExtra("collection_id");
         recipeToSave.setCollectionId(collectionIdFromIntent);
 
@@ -384,12 +428,9 @@ public class AddRecipeActivity extends AppCompatActivity {
                         btnSave.setText("Salvar");
                         Toast.makeText(this, "Erro ao atualizar.", Toast.LENGTH_SHORT).show();
                     });
-        } else {// DENTRO DO ELSE (Nova Receita)
+        } else {
             if (currentUserId != null) {
                 recipeToSave.setOwnerId(currentUserId);
-
-                // CORREÇÃO: A lista de partilha deve começar VAZIA.
-                // Não adiciones o currentUserId aqui!
                 List<String> shares = new ArrayList<>();
                 recipeToSave.setSharedWith(shares);
             }

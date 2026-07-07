@@ -6,11 +6,19 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.content.res.ResourcesCompat;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -49,12 +57,13 @@ public class ViewCollectionActivity extends AppCompatActivity implements RecipeA
 
         collectionId = getIntent().getStringExtra("collection_id");
         collectionName = getIntent().getStringExtra("collection_name");
-// Adiciona isto logo a seguir a receber os extras do Intent
+
         Log.d("DEBUG_COLLECTION", "ID Recebido: " + collectionId);
 
         if (collectionId == null) {
             Toast.makeText(this, "Erro: ID da coleção é nulo!", Toast.LENGTH_LONG).show();
         }
+
         tvCollectionTitle = findViewById(R.id.tvCollectionTitle);
         tvEmptyCollection = findViewById(R.id.tvEmptyCollection);
         recyclerView = findViewById(R.id.recyclerViewCollectionRecipes);
@@ -83,8 +92,6 @@ public class ViewCollectionActivity extends AppCompatActivity implements RecipeA
     private void loadRecipesForThisCollection() {
         if (collectionId == null) return;
 
-        // Mudamos a lógica: Pedimos todas as receitas desta coleção.
-        // O Firebase filtrará automaticamente o que o utilizador tem permissão para ver.
         db.collection("recipes")
                 .whereEqualTo("collectionId", collectionId)
                 .get()
@@ -132,14 +139,23 @@ public class ViewCollectionActivity extends AppCompatActivity implements RecipeA
 
         String[] opcoes = {"📝 Criar Nova Receita", "📖 Adicionar Receita Existente"};
 
-        builder.setItems(opcoes, (dialog, which) -> {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, opcoes) {
+            @NonNull
+            @Override
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView tv = view.findViewById(android.R.id.text1);
+                tv.setTextColor(Color.BLACK); // Força a cor preta
+                return view;
+            }
+        };
+
+        builder.setAdapter(adapter, (dialog, which) -> {
             if (which == 0) {
-                // Vai criar uma nova receita e passa-lhe o ID do livro!
                 Intent intent = new Intent(this, AddRecipeActivity.class);
                 intent.putExtra("collection_id", collectionId);
                 startActivity(intent);
             } else if (which == 1) {
-                // Vai buscar receitas já existentes
                 mostrarListaReceitasExistentes();
             }
         });
@@ -182,14 +198,104 @@ public class ViewCollectionActivity extends AppCompatActivity implements RecipeA
                         return;
                     }
 
-                    String[] arrayNomes = nomesReceitas.toArray(new String[0]);
-                    new AlertDialog.Builder(this)
-                            .setTitle("Escolhe uma Receita")
-                            .setItems(arrayNomes, (dialog, which) -> {
-                                Recipe selecionada = receitasDisponiveis.get(which);
-                                vincularReceitaAoLivro(selecionada.getFirestoreId());
-                            }).show();
+                    mostrarDialogEscolherReceita(receitasDisponiveis, nomesReceitas);
                 });
+    }
+
+    /**
+     * Mostra um dialog elegante com a lista de receitas disponíveis para adicionar ao livro
+     */
+    private void mostrarDialogEscolherReceita(List<Recipe> receitasDisponiveis, List<String> nomesReceitas) {
+        Typeface tangerine = ResourcesCompat.getFont(this, R.font.tangerine_regular);
+
+        // ===== CRIAR SUBTÍTULO COM O NOME DO LIVRO =====
+        TextView tvSubtitulo = new TextView(this);
+        String nomeExibicao = (collectionName != null) ? collectionName : "esta Coleção";
+        tvSubtitulo.setText("Adicionar a \"" + nomeExibicao + "\"");
+        tvSubtitulo.setTypeface(tangerine, Typeface.BOLD_ITALIC);
+        tvSubtitulo.setTextSize(26f); // A fonte Tangerine costuma precisar de um tamanho maior
+        tvSubtitulo.setTextColor(Color.parseColor("#6B5D4F"));
+        tvSubtitulo.setPadding(0, 0, 0, 20);
+        tvSubtitulo.setGravity(Gravity.CENTER);
+
+        // ===== LISTA DE RECEITAS ESTILIZADA =====
+        ListView listView = new ListView(this);
+
+        // Criar um separador elegante entre as receitas
+        android.graphics.drawable.GradientDrawable divider = new android.graphics.drawable.GradientDrawable();
+        divider.setColor(Color.parseColor("#E0D6C8"));
+        divider.setSize(0, 2);
+        listView.setDivider(divider);
+        listView.setDividerHeight(2);
+
+        // Adaptador para estilizar cada item da lista
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, nomesReceitas) {
+            @androidx.annotation.NonNull
+            @Override
+            public View getView(int position, View convertView, @androidx.annotation.NonNull ViewGroup parent) {
+                TextView tv = (TextView) super.getView(position, convertView, parent);
+                tv.setTypeface(tangerine);
+                tv.setTextSize(32f);
+                tv.setTextColor(Color.parseColor("#2C2416"));
+                tv.setPadding(40, 30, 40, 30);
+
+                tv.setText("📖  " + getItem(position));
+
+                return tv;
+            }
+        };
+        listView.setAdapter(adapter);
+
+        // ===== CONTAINER VERTICAL =====
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(50, 20, 50, 10);
+        container.addView(tvSubtitulo);
+        container.addView(listView);
+
+        // ===== CRIAR E CONFIGURAR O DIALOG =====
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Escolher Receita")
+                .setView(container)
+                .setNegativeButton("✕ Cancelar", null)
+                .create();
+
+        // Ação de clique nos itens da lista
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            Recipe selecionada = receitasDisponiveis.get(position);
+            vincularReceitaAoLivro(selecionada.getFirestoreId());
+            dialog.dismiss(); // Fechar o dialog após escolher
+        });
+
+        // ===== APLICAR FUNDO PERSONALIZADO (como no teu código) =====
+        if (dialog.getWindow() != null) {
+            android.graphics.drawable.GradientDrawable dialogBg = new android.graphics.drawable.GradientDrawable();
+            dialogBg.setColor(Color.parseColor("#FDF8F0"));
+            dialogBg.setCornerRadius(30f);
+            dialogBg.setStroke(4, Color.parseColor("#D4C4A8"));
+            dialog.getWindow().setBackgroundDrawable(dialogBg);
+        }
+
+        dialog.show();
+
+        // ===== ESTILIZAR TÍTULO E BOTÃO =====
+        int titleId = getResources().getIdentifier("alertTitle", "id", "android");
+        TextView tvTitle = dialog.findViewById(titleId);
+        if (tvTitle != null) {
+            tvTitle.setTypeface(tangerine, Typeface.BOLD);
+            tvTitle.setTextSize(42f);
+            tvTitle.setTextColor(Color.parseColor("#8B7355"));
+            tvTitle.setPadding(50, 40, 50, 10);
+            tvTitle.setGravity(Gravity.CENTER);
+        }
+
+        Button btnNegativo = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        if (btnNegativo != null) {
+            btnNegativo.setTypeface(tangerine, Typeface.BOLD);
+            btnNegativo.setTextSize(22f);
+            btnNegativo.setTextColor(Color.parseColor("#FF0000"));
+            btnNegativo.setPadding(0, 10, 0, 30);
+        }
     }
 
     private void vincularReceitaAoLivro(String recipeId) {
@@ -222,26 +328,111 @@ public class ViewCollectionActivity extends AppCompatActivity implements RecipeA
 
     @Override
     public void onDeleteClick(Recipe recipe) {
-        // PERGUNTA: Remover do Livro ou Apagar de vez?
-        String[] opcoes = {"Remover deste Livro", "Apagar receita para sempre"};
+        Typeface tangerine = ResourcesCompat.getFont(this, R.font.tangerine_regular);
 
-        new AlertDialog.Builder(this)
-                .setTitle("O que pretendes fazer?")
-                .setItems(opcoes, (dialog, which) -> {
-                    if (which == 0) {
-                        // Apenas retira do livro (volta a ser receita solta)
-                        db.collection("recipes").document(recipe.getFirestoreId())
-                                .update("collectionId", FieldValue.delete())
-                                .addOnSuccessListener(v -> {
-                                    Toast.makeText(this, "Removida do livro!", Toast.LENGTH_SHORT).show();
-                                    loadRecipesForThisCollection();
-                                });
-                    } else if (which == 1) {
-                        // Apaga do Firebase
-                        db.collection("recipes").document(recipe.getFirestoreId()).delete()
-                                .addOnSuccessListener(v -> loadRecipesForThisCollection());
-                    }
-                }).show();
+        // Paleta de Cores
+        int corFundo = Color.parseColor("#FDF8F0");
+        int corBorda = Color.parseColor("#D4C4A8");
+        int corTitulo = Color.parseColor("#5D4037");
+        int corAviso = Color.parseColor("#A64444"); // Vermelho terracota para exclusão
+
+        // 1. Container Principal
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(60, 50, 60, 50);
+        root.setGravity(Gravity.CENTER);
+
+        // 2. Título do Dialog
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("Gerir Receita");
+        tvTitle.setTypeface(tangerine, Typeface.BOLD);
+        tvTitle.setTextSize(40f);
+        tvTitle.setTextColor(corTitulo);
+        tvTitle.setPadding(0, 0, 0, 10);
+        root.addView(tvTitle);
+
+        // 3. Subtítulo (Nome da Receita)
+        TextView tvSubtitle = new TextView(this);
+        tvSubtitle.setText(recipe.getName());
+        tvSubtitle.setTypeface(tangerine, Typeface.ITALIC);
+        tvSubtitle.setTextSize(26f);
+        tvSubtitle.setTextColor(Color.parseColor("#8B7355"));
+        tvSubtitle.setPadding(0, 0, 0, 40);
+        root.addView(tvSubtitle);
+
+        // 4. Estilizar os Botões de Ação (como TextViews clicáveis)
+        TextView btnRemoveFromBook = criarBotaoMenu(
+                "Remover apenas deste livro",
+                Color.parseColor("#4E342E"), 30f, tangerine);
+
+        TextView btnDeleteForever = criarBotaoMenu(
+                "  Apagar receita para sempre",
+                corAviso, 30f, tangerine);
+
+        TextView btnCancel = criarBotaoMenu(
+                "Voltar",
+                Color.GRAY, 22f, tangerine);
+        btnCancel.setPadding(0, 40, 0, 0);
+
+        root.addView(btnRemoveFromBook);
+        root.addView(btnDeleteForever);
+        root.addView(btnCancel);
+
+        // 5. Criar o AlertDialog
+        AlertDialog dialog = new AlertDialog.Builder(this).create();
+        dialog.setView(root);
+
+        // Ações dos Botões
+        btnRemoveFromBook.setOnClickListener(v -> {
+            db.collection("recipes").document(recipe.getFirestoreId())
+                    .update("collectionId", FieldValue.delete())
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Removida do livro!", Toast.LENGTH_SHORT).show();
+                        loadRecipesForThisCollection();
+                        dialog.dismiss();
+                    });
+        });
+
+        btnDeleteForever.setOnClickListener(v -> {
+            db.collection("recipes").document(recipe.getFirestoreId()).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        loadRecipesForThisCollection();
+                        dialog.dismiss();
+                    });
+        });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        // 6. Fundo Arredondado e Borda
+        if (dialog.getWindow() != null) {
+            android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+            bg.setColor(corFundo);
+            bg.setCornerRadius(40f);
+            bg.setStroke(4, corBorda);
+            dialog.getWindow().setBackgroundDrawable(bg);
+        }
+
+        dialog.show();
+    }
+
+    // Função auxiliar para criar os itens do menu rapidamente
+    private TextView criarBotaoMenu(String texto, int cor, float tamanho, Typeface tf) {
+        TextView tv = new TextView(this);
+        tv.setText(texto);
+        tv.setTextColor(cor);
+        tv.setTextSize(tamanho);
+        tv.setTypeface(tf);
+        tv.setPadding(0, 20, 0, 20);
+        tv.setGravity(Gravity.CENTER);
+        tv.setClickable(true);
+        tv.setFocusable(true);
+
+        // Adiciona um efeito visual simples de clique
+        android.util.TypedValue outValue = new android.util.TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        tv.setBackgroundResource(outValue.resourceId);
+
+        return tv;
     }
 
     @Override

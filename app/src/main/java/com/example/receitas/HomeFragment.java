@@ -285,12 +285,94 @@ public class HomeFragment extends Fragment implements
     }
 
     private void mostrarOpcoesAdicionar() {
-        new AlertDialog.Builder(getContext())
+        Typeface tangerine = ResourcesCompat.getFont(requireContext(), R.font.tangerine_regular);
+
+        // ===== CONTAINER PRINCIPAL =====
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(60, 40, 60, 60);
+        container.setGravity(Gravity.CENTER);
+        container.setBackgroundColor(Color.parseColor("#FDF8F0"));
+
+        // ===== ESTILO DOS BOTÕES (Background) =====
+        // Criamos um método auxiliar para não repetir código de desenho
+        GradientDrawable btnBg = new GradientDrawable();
+        btnBg.setColor(Color.parseColor("#FFFFFF"));
+        btnBg.setCornerRadius(25f);
+        btnBg.setStroke(3, Color.parseColor("#BAB095"));
+
+        // ===== BOTAO: NOVA RECEITA =====
+        TextView btnReceita = new TextView(getContext());
+        btnReceita.setText("🍳 Nova Receita");
+        btnReceita.setTypeface(tangerine, Typeface.BOLD);
+        btnReceita.setTextSize(32f);
+        btnReceita.setTextColor(Color.parseColor("#5A4A3A"));
+        btnReceita.setGravity(Gravity.CENTER);
+        btnReceita.setPadding(20, 40, 20, 40);
+        btnReceita.setBackground(btnBg);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, 30);
+        btnReceita.setLayoutParams(params);
+
+        // ===== BOTAO: NOVO LIVRO =====
+        TextView btnLivro = new TextView(getContext());
+        btnLivro.setText("📚 Nova Coleção");
+        btnLivro.setTypeface(tangerine, Typeface.BOLD);
+        btnLivro.setTextSize(32f);
+        btnLivro.setTextColor(Color.parseColor("#5A4A3A"));
+        btnLivro.setGravity(Gravity.CENTER);
+        btnLivro.setPadding(20, 40, 20, 40);
+
+        // Usamos um novo drawable para o segundo botão para evitar bugs de estado
+        GradientDrawable btnBg2 = new GradientDrawable();
+        btnBg2.setColor(Color.parseColor("#FFFFFF"));
+        btnBg2.setCornerRadius(25f);
+        btnBg2.setStroke(3, Color.parseColor("#BAB095"));
+        btnLivro.setBackground(btnBg2);
+
+        // Adicionar à vista
+        container.addView(btnReceita);
+        container.addView(btnLivro);
+
+        // ===== CRIAR O DIALOG =====
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setTitle("O que vais preparar hoje?")
-                .setItems(new String[]{"🍳 Nova Receita", "📚 Novo Livro"}, (d, w) -> {
-                    if (w == 0) startActivity(new Intent(getActivity(), AddRecipeActivity.class));
-                    else startActivity(new Intent(getActivity(), AddCollectionActivity.class));
-                }).show();
+                .setView(container)
+                .create();
+
+        // Estilizar o Fundo do Dialog
+        if (dialog.getWindow() != null) {
+            GradientDrawable dialogBg = new GradientDrawable();
+            dialogBg.setColor(Color.parseColor("#FDF8F0"));
+            dialogBg.setCornerRadius(40f);
+            dialogBg.setStroke(4, Color.parseColor("#D4C4A8"));
+            dialog.getWindow().setBackgroundDrawable(dialogBg);
+        }
+
+        // ===== LOGICA DE CLIQUE =====
+        btnReceita.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), AddRecipeActivity.class));
+            dialog.dismiss();
+        });
+
+        btnLivro.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), AddCollectionActivity.class));
+            dialog.dismiss();
+        });
+
+        dialog.show();
+
+        // ===== ESTILIZAR O TÍTULO APÓS SHOW =====
+        TextView tvTitle = dialog.findViewById(getResources().getIdentifier("alertTitle", "id", "android"));
+        if (tvTitle != null) {
+            tvTitle.setTypeface(tangerine, Typeface.BOLD);
+            tvTitle.setTextSize(38f);
+            tvTitle.setTextColor(Color.parseColor("#8B7355"));
+            tvTitle.setGravity(Gravity.CENTER);
+            tvTitle.setPadding(0, 50, 0, 20);
+        }
     }
 
     // =========================================================
@@ -358,7 +440,7 @@ public class HomeFragment extends Fragment implements
             Toast.makeText(getContext(), "Só o dono pode partilhar.", Toast.LENGTH_SHORT).show();
             return;
         }
-        mostrarDialogPartilha("Partilhar Livro", c.getName(), email -> shareCollectionWithEmail(c, email));
+        mostrarDialogPartilha("Partilhar coleção", c.getName(), email -> shareCollectionWithEmail(c, email));
     }
 
     private void shareCollectionWithEmail(RecipeCollection collection, String email) {
@@ -371,7 +453,7 @@ public class HomeFragment extends Fragment implements
 
                         db.collection("recipe_collections").document(collection.getId())
                                 .update("sharedWith", FieldValue.arrayUnion(uidToShare))
-                                .addOnSuccessListener(v -> Toast.makeText(getContext(), "Livro partilhado!", Toast.LENGTH_SHORT).show())
+                                .addOnSuccessListener(v -> Toast.makeText(getContext(), "Coleção partilhada!", Toast.LENGTH_SHORT).show())
                                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Erro ao partilhar", Toast.LENGTH_SHORT).show());
                     } else {
                         Toast.makeText(getContext(), "Utilizador não encontrado", Toast.LENGTH_SHORT).show();

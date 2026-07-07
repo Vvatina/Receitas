@@ -68,7 +68,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Nome de Chef (Username):"
+                android:text="Nome de utilizador:"
                 android:fontFamily="@font/tangerine_regular"
                 android:textSize="32sp"
                 android:textStyle="bold"
@@ -92,7 +92,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="A minha especialidade na cozinha:"
+                android:text="Biografia:"
                 android:fontFamily="@font/tangerine_regular"
                 android:textSize="32sp"
                 android:textStyle="bold"
@@ -140,7 +140,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Nova Senha (deixa em branco para manter):"
+                android:text="Nova palavra-passe (deixa em branco para manter):"
                 android:fontFamily="@font/tangerine_regular"
                 android:textSize="32sp"
                 android:textStyle="bold"

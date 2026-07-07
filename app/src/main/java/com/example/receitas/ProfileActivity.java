@@ -66,6 +66,7 @@ public class ProfileActivity extends AppCompatActivity {
         editUsername = findViewById(R.id.editUsername);
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
+        editBio = findViewById(R.id.editBio); // 👈 ADICIONE ESTA LINHA!
         imgProfile = findViewById(R.id.imgProfile);
         btnGuardar = findViewById(R.id.btnSaveProfile);
 
